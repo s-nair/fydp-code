@@ -1,0 +1,3 @@
+C:/baremetal/scripts/CMakeFiles/edit_cache.dir
+C:/baremetal/scripts/CMakeFiles/mra-flash-slave.dir
+C:/baremetal/scripts/CMakeFiles/rebuild_cache.dir

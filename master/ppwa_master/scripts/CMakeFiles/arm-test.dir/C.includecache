@@ -1,0 +1,46 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/baremetal/arm-cstubs.c
+errno.h
+-
+sys/stat.h
+-
+sys/times.h
+-
+
+C:/baremetal/arm-start.c
+
+C:/baremetal/arm-test3.c
+string.h
+-
+stdlib.h
+-
+rpi-gpio.h
+C:/baremetal/rpi-gpio.h
+rpi-systimer.h
+C:/baremetal/rpi-systimer.h
+
+C:/baremetal/rpi-base.h
+stdint.h
+-
+
+C:/baremetal/rpi-gpio.h
+
+C:/baremetal/rpi-systimer.c
+stdint.h
+-
+rpi-systimer.h
+C:/baremetal/rpi-systimer.h
+
+C:/baremetal/rpi-systimer.h
+stdint.h
+-
+rpi-base.h
+C:/baremetal/rpi-base.h
+
