@@ -9,9 +9,6 @@
 #include <string.h>
 #include <time.h>
 
-#define IN_FIFO_NAME 		"/home/pi/pipe11"
-#define OUT_FIFO_NAME 		"/home/pi/pipe3"
-#define DOUBLE_BUFFER_NAME	"/home/pi/test_pipe"
 #define FRAME_LEN 		1408			// 4 * 352
 #define THRESHOLD 		500			// 44100 fr/sec * 2 sa/fr * 2 B/sa * 4 sec / 1408 B
 
