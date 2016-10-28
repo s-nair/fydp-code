@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Startup script for initializing shairport-sync receivers with pipe output and passing through ffmpeg processing
+#
+# Configuring system to run script at boot:
+# - 'sudo nano /etc/init.d/script'
+# - 'sudo chmod 755 /etc/init.d/script'
+# - 'sudo update-rc.d script defaults'
+#
+# Remove script from startup list:
+# - 'update-rc.d -f script remove'
+#
+# ffmpeg flags:
+# -y --> ignore prompt for overwriting output file (global)
+# -ar --> audio rate (nominal: 44100 Hz)
+# -ac --> audio channels (changing this from input to output can up/downmix audio
+# -f --> format (s16le = 16-bit little endian)
+# -i --> input file/pipe
+# -c copy --> stream copy to avoid encoding/decoding the input signal and pass it through to the output
+#
+# pipe:0 --> stdin
+# pipe:1 --> stdout
+#
+# Notes:
+# - '-ac <n>' and '-c copy' cannot work together as stream copy bypasses encoding/decoding while up/downmixing needs it
+# - must send stderr for each pipeline to a separate log file
+
+log1="/home/pi/fydp/audio_pipe/logs/log1"
+log2="/home/pi/fydp/audio_pipe/logs/log2"
+log3="/home/pi/fydp/audio_pipe/logs/log3"
+
+sil_in="/home/pi/fydp/audio_pipe/bin/sil_in"
+
+in_stereo_1="/home/pi/fydp/audio_pipe/fifos/pipe11"
+in_stereo_2="/home/pi/fydp/audio_pipe/fifos/pipe22"
+sil_stereo_1="/home/pi/fydp/audio_pipe/fifos/pipe10"
+sil_stereo_2="/home/pi/fydp/audio_pipe/fifos/pipe20"
+sil_mono_1="/home/pi/fydp/audio_pipe/fifos/pipe1"
+sil_mono_2="/home/pi/fydp/audio_pipe/fifos/pipe2"
+out_stereo="/home/pi/fydp/audio_pipe/fifos/pipe3"
+
+# stop shairport-sync.service that was automatically kicked-off on startup (pipe doesn't work with conf file)
+sudo systemctl stop shairport-sync.service
+
+# clear FIFOs and logs
+sudo bash -c 'echo > pipe1'
+sudo bash -c 'echo > pipe10'
+sudo bash -c 'echo > pipe2'
+sudo bash -c 'echo > pipe20'
+sudo bash -c 'echo > pipe3'
+sudo bash -c 'echo > log1'
+sudo bash -c 'echo > log2'
+sudo bash -c 'echo > log3'
+
+# kickoff shairport-sync receivers
+shairport-sync -v -p 5000 -a "Brickleberry 1" -o pipe -- $in_stereo_1 &
+shairport-sync -v -p 3000 -a "Brickleberry 2" -o pipe -- $in_stereo_2 &
+
+# inject silence into streams
+sudo .$sil_in $in_stereo_1 $sil_stereo_1 &
+sudo .$sil_in $in_stereo_2 $sil_stereo_2 &
+
+# downmix audio from both users to mono outputs
+ffmpeg -y -ar 44100 -ac 2 -f s16le -i $sil_stereo_1 -ar 44100 -ac 1 -f s16le $sil_mono_1 2>$log1 &
+ffmpeg -y -ar 44100 -ac 2 -f s16le -i $sil_stereo_2 -ar 44100 -ac 1 -f s16le $sil_mono_2 2>$log2 &
+
+# merge mono streams from above to one stereo output
+ffmpeg -y -ar 44100 -ac 1 -f s16le -i $sil_mono_1 -ar 44100 -ac 1 -f s16le -i $sil_mono_2 -filter_complex "[0:a][1:a]amerge=inputs=2[aout]" -map "[aout]" -ar 44100 -ac 2 -f s16le $out_stereo 2>$log3 &
+
+# send to ALSA for audio output
+cat $out_stereo | aplay -r 44100 -f S16_LE -c 2 &
