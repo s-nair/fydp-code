@@ -41,49 +41,49 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Application/app_error.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-ECLIPSE_HOME/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_error.c</locationURI>
-		</link>
-		<link>
-			<name>Application/app_error_weak.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-ECLIPSE_HOME/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_error_weak.c</locationURI>
-		</link>
-		<link>
-			<name>Application/app_fifo.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/components/libraries/fifo/app_fifo.c</locationURI>
-		</link>
-		<link>
-			<name>Application/app_timer.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/components/libraries/timer/app_timer.c</locationURI>
-		</link>
-		<link>
-			<name>Application/app_util_platform.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-ECLIPSE_HOME/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_util_platform.c</locationURI>
-		</link>
-		<link>
-			<name>Application/hardfault_implementation.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/components/libraries/hardfault/hardfault_implementation.c</locationURI>
-		</link>
-		<link>
 			<name>Application/main.c</name>
 			<type>1</type>
 			<locationURI>PARENT-3-PROJECT_LOC/main.c</locationURI>
 		</link>
 		<link>
-			<name>Application/nrf_assert.c</name>
+			<name>Device/app_error.c</name>
 			<type>1</type>
-			<locationURI>PARENT-5-ECLIPSE_HOME/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/nrf_assert.c</locationURI>
+			<locationURI>PARENT-5-ECLIPSE_HOME/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_error.c</locationURI>
+		</link>
+		<link>
+			<name>Device/app_error_weak.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-ECLIPSE_HOME/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_error_weak.c</locationURI>
+		</link>
+		<link>
+			<name>Device/app_fifo.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/components/libraries/fifo/app_fifo.c</locationURI>
+		</link>
+		<link>
+			<name>Device/app_timer.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/components/libraries/timer/app_timer.c</locationURI>
+		</link>
+		<link>
+			<name>Device/app_util_platform.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-ECLIPSE_HOME/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_util_platform.c</locationURI>
 		</link>
 		<link>
 			<name>Device/gcc_startup_nrf52.S</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/components/toolchain/gcc/gcc_startup_nrf52.S</locationURI>
+		</link>
+		<link>
+			<name>Device/hardfault_implementation.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/components/libraries/hardfault/hardfault_implementation.c</locationURI>
+		</link>
+		<link>
+			<name>Device/nrf_assert.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-ECLIPSE_HOME/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/nrf_assert.c</locationURI>
 		</link>
 		<link>
 			<name>Device/softdevice_handler.c</name>

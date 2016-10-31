@@ -5,6 +5,8 @@ OUTPUT_DIRECTORY := _build
 SDK_ROOT := ../../../../../..
 PROJ_DIR := ../../..
 
+NRFJPROG_DIR := ../../../../../../../nRF5x-Command-Line-Tools_9_0_0_OSX/nrfjprog
+
 $(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
   LINKER_SCRIPT  := ble_app_hrs_gcc_nrf52.ld
 # Source files common to all targets
@@ -60,8 +62,6 @@ SRC_FILES += \
 
 # Include folders common to all targets
 INC_FOLDERS += \
-  $(PROJ_DIR)/config/ble_app_hrs_pca10040_s132 \
-  $(PROJ_DIR)/config \
   $(SDK_ROOT)/components/drivers_nrf/comp \
   $(SDK_ROOT)/components/drivers_nrf/twi_master \
   $(SDK_ROOT)/components/ble/ble_services/ble_ancs_c \
@@ -182,7 +182,7 @@ CFLAGS += -DNRF52_PAN_62
 CFLAGS += -DNRF52_PAN_63
 CFLAGS += -mcpu=cortex-m4
 CFLAGS += -mthumb -mabi=aapcs
-CFLAGS +=  -Wall -Werror -O3 -g3
+CFLAGS +=  -Wall -Werror -O0 -g3
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 # keep every function in separate section, this allows linker to discard unused ones
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
@@ -254,11 +254,11 @@ $(foreach target, $(TARGETS), $(call define_target, $(target)))
 # Flash the program
 flash: $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex
 	@echo Flashing: $<
-	nrfjprog --program $< -f nrf52 --sectorerase
-	nrfjprog --reset -f nrf52
+	$(NRFJPROG_DIR)/nrfjprog --program $< -f nrf52 --sectorerase
+	$(NRFJPROG_DIR)/nrfjprog --reset -f nrf52
 # Flash softdevice
 flash_softdevice:
 	@echo Flashing: s132_nrf52_3.0.0_softdevice.hex
-	nrfjprog --program $(SDK_ROOT)/components/softdevice/s132/hex/s132_nrf52_3.0.0_softdevice.hex -f nrf52 --chiperase 
-	nrfjprog --reset -f nrf52
+	$(NRFJPROG_DIR)/nrfjprog --program $(SDK_ROOT)/components/softdevice/s132/hex/s132_nrf52_3.0.0_softdevice.hex -f nrf52 --chiperase 
+	$(NRFJPROG_DIR)/nrfjprog --reset -f nrf52
 
