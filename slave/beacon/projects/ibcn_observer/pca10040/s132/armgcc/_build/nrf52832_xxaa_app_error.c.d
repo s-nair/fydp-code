@@ -50,7 +50,14 @@ _build/nrf52832_xxaa_app_error.c.o: \
  /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/inttypes.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/log/nrf_log_ctrl.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/sdk_errors.h \
- ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/log/src/nrf_log_ctrl_internal.h
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/log/src/nrf_log_ctrl_internal.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_util_platform.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_soc.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_svc.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_error_soc.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_error.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_nvic.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/nrf_assert.h
 
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/device/nrf.h:
 
@@ -153,3 +160,17 @@ _build/nrf52832_xxaa_app_error.c.o: \
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/sdk_errors.h:
 
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/log/src/nrf_log_ctrl_internal.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_util_platform.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_soc.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_svc.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_error_soc.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_error.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_nvic.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/nrf_assert.h:

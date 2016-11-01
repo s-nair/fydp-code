@@ -121,9 +121,9 @@
 			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/ble/ble_advertising/ble_advertising.c</location>
 		</link>
 		<link>
-			<name>nRF_BLE/ble_bas.c</name>
+			<name>nRF_BLE/ble_bas_c.c</name>
 			<type>1</type>
-			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/ble/ble_services/ble_bas/ble_bas.c</location>
+			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/ble/ble_services/ble_bas_c/ble_bas_c.c</location>
 		</link>
 		<link>
 			<name>nRF_BLE/ble_conn_params.c</name>
@@ -136,14 +136,14 @@
 			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/ble/common/ble_conn_state.c</location>
 		</link>
 		<link>
-			<name>nRF_BLE/ble_dis.c</name>
+			<name>nRF_BLE/ble_db_discovery.c</name>
 			<type>1</type>
-			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/ble/ble_services/ble_dis/ble_dis.c</location>
+			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/ble/ble_db_discovery/ble_db_discovery.c</location>
 		</link>
 		<link>
-			<name>nRF_BLE/ble_hrs.c</name>
+			<name>nRF_BLE/ble_hrs_c.c</name>
 			<type>1</type>
-			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/ble/ble_services/ble_hrs/ble_hrs.c</location>
+			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/ble/ble_services/ble_hrs_c/ble_hrs_c.c</location>
 		</link>
 		<link>
 			<name>nRF_BLE/ble_srv_common.c</name>
