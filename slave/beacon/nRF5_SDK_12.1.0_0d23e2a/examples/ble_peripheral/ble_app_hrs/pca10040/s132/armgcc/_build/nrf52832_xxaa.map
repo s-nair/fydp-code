@@ -392,15 +392,15 @@ Discarded input sections
  .text.fifo_length
                 0x0000000000000000       0x24 _build/nrf52832_xxaa_app_fifo.c.o
  .text.fifo_put
-                0x0000000000000000       0x38 _build/nrf52832_xxaa_app_fifo.c.o
+                0x0000000000000000       0x3c _build/nrf52832_xxaa_app_fifo.c.o
  .text.fifo_peek
-                0x0000000000000000       0x34 _build/nrf52832_xxaa_app_fifo.c.o
+                0x0000000000000000       0x38 _build/nrf52832_xxaa_app_fifo.c.o
  .text.fifo_get
                 0x0000000000000000       0x28 _build/nrf52832_xxaa_app_fifo.c.o
  .text.app_fifo_init
                 0x0000000000000000       0x58 _build/nrf52832_xxaa_app_fifo.c.o
  .text.app_fifo_put
-                0x0000000000000000       0x34 _build/nrf52832_xxaa_app_fifo.c.o
+                0x0000000000000000       0x38 _build/nrf52832_xxaa_app_fifo.c.o
  .text.app_fifo_get
                 0x0000000000000000       0x2c _build/nrf52832_xxaa_app_fifo.c.o
  .text.app_fifo_peek
@@ -410,8 +410,8 @@ Discarded input sections
  .text.app_fifo_read
                 0x0000000000000000       0x84 _build/nrf52832_xxaa_app_fifo.c.o
  .text.app_fifo_write
-                0x0000000000000000       0x90 _build/nrf52832_xxaa_app_fifo.c.o
- .debug_info    0x0000000000000000      0x456 _build/nrf52832_xxaa_app_fifo.c.o
+                0x0000000000000000       0x94 _build/nrf52832_xxaa_app_fifo.c.o
+ .debug_info    0x0000000000000000      0x445 _build/nrf52832_xxaa_app_fifo.c.o
  .debug_abbrev  0x0000000000000000      0x13e _build/nrf52832_xxaa_app_fifo.c.o
  .debug_aranges
                 0x0000000000000000       0x70 _build/nrf52832_xxaa_app_fifo.c.o
@@ -458,7 +458,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x83 _build/nrf52832_xxaa_app_fifo.c.o
  .debug_macro   0x0000000000000000       0x49 _build/nrf52832_xxaa_app_fifo.c.o
  .debug_line    0x0000000000000000      0x5dd _build/nrf52832_xxaa_app_fifo.c.o
- .debug_str     0x0000000000000000    0x601cb _build/nrf52832_xxaa_app_fifo.c.o
+ .debug_str     0x0000000000000000    0x601b9 _build/nrf52832_xxaa_app_fifo.c.o
  .comment       0x0000000000000000       0x6f _build/nrf52832_xxaa_app_fifo.c.o
  .debug_frame   0x0000000000000000      0x1b4 _build/nrf52832_xxaa_app_fifo.c.o
  .ARM.attributes

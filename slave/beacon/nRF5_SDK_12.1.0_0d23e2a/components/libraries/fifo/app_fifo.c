@@ -26,7 +26,7 @@ static __INLINE uint32_t fifo_length(app_fifo_t * p_fifo)
 
 
 /**@brief Put one byte to the FIFO. */
-static __INLINE void fifo_put(app_fifo_t * p_fifo, uint8_t byte)
+static __INLINE void fifo_put(app_fifo_t * p_fifo, uint16_t byte)
 {
     p_fifo->p_buf[p_fifo->write_pos & p_fifo->buf_size_mask] = byte;
     p_fifo->write_pos++;
@@ -34,21 +34,21 @@ static __INLINE void fifo_put(app_fifo_t * p_fifo, uint8_t byte)
 
 
 /**@brief Look at one byte in the FIFO. */
-static __INLINE void fifo_peek(app_fifo_t * p_fifo, uint16_t index, uint8_t * p_byte)
+static __INLINE void fifo_peek(app_fifo_t * p_fifo, uint16_t index, uint16_t * p_byte)
 {
     *p_byte = p_fifo->p_buf[(p_fifo->read_pos + index) & p_fifo->buf_size_mask];
 }
 
 
 /**@brief Get one byte from the FIFO. */
-static __INLINE void fifo_get(app_fifo_t * p_fifo, uint8_t * p_byte)
+static __INLINE void fifo_get(app_fifo_t * p_fifo, uint16_t * p_byte)
 {
     fifo_peek(p_fifo, 0, p_byte);
     p_fifo->read_pos++;
 }
 
 
-uint32_t app_fifo_init(app_fifo_t * p_fifo, uint8_t * p_buf, uint16_t buf_size)
+uint32_t app_fifo_init(app_fifo_t * p_fifo, uint16_t * p_buf, uint16_t buf_size)
 {
     // Check buffer for null pointer.
     if (p_buf == NULL)
@@ -71,7 +71,7 @@ uint32_t app_fifo_init(app_fifo_t * p_fifo, uint8_t * p_buf, uint16_t buf_size)
 }
 
 
-uint32_t app_fifo_put(app_fifo_t * p_fifo, uint8_t byte)
+uint32_t app_fifo_put(app_fifo_t * p_fifo, uint16_t byte)
 {
     if (FIFO_LENGTH() <= p_fifo->buf_size_mask)
     {
@@ -83,7 +83,7 @@ uint32_t app_fifo_put(app_fifo_t * p_fifo, uint8_t byte)
 }
 
 
-uint32_t app_fifo_get(app_fifo_t * p_fifo, uint8_t * p_byte)
+uint32_t app_fifo_get(app_fifo_t * p_fifo, uint16_t * p_byte)
 {
     if (FIFO_LENGTH() != 0)
     {
@@ -96,7 +96,7 @@ uint32_t app_fifo_get(app_fifo_t * p_fifo, uint8_t * p_byte)
 }
 
 
-uint32_t app_fifo_peek(app_fifo_t * p_fifo, uint16_t index, uint8_t * p_byte)
+uint32_t app_fifo_peek(app_fifo_t * p_fifo, uint16_t index, uint16_t * p_byte)
 {
     if (FIFO_LENGTH() > index)
     {
@@ -115,7 +115,7 @@ uint32_t app_fifo_flush(app_fifo_t * p_fifo)
 }
 
 
-uint32_t app_fifo_read(app_fifo_t * p_fifo, uint8_t * p_byte_array, uint32_t * p_size)
+uint32_t app_fifo_read(app_fifo_t * p_fifo, uint16_t * p_byte_array, uint32_t * p_size)
 {
     VERIFY_PARAM_NOT_NULL(p_fifo);
     VERIFY_PARAM_NOT_NULL(p_size);
@@ -151,7 +151,7 @@ uint32_t app_fifo_read(app_fifo_t * p_fifo, uint8_t * p_byte_array, uint32_t * p
 }
 
 
-uint32_t app_fifo_write(app_fifo_t * p_fifo, uint8_t const * p_byte_array, uint32_t * p_size)
+uint32_t app_fifo_write(app_fifo_t * p_fifo, uint16_t const * p_byte_array, uint32_t * p_size)
 {
     VERIFY_PARAM_NOT_NULL(p_fifo);
     VERIFY_PARAM_NOT_NULL(p_size);

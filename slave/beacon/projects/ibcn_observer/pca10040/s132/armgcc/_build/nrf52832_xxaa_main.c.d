@@ -22,8 +22,11 @@ _build/nrf52832_xxaa_main.c.o: ../../../main.c \
  /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/sys/types.h \
  /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/machine/types.h \
  /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/sys/stdio.h \
+ /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/stdlib.h \
+ /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/machine/stdlib.h \
  /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/string.h \
  /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/sys/string.h \
+ /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/math.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/nordic_common.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_sdm.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_svc.h \
@@ -65,8 +68,6 @@ _build/nrf52832_xxaa_main.c.o: ../../../main.c \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/ble_gatt.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/ble/common/ble_gatt_db.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/common/softdevice_handler/softdevice_handler.h \
- /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/stdlib.h \
- /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/machine/stdlib.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_error.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/sdk_errors.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/nordic_common.h \
@@ -112,7 +113,21 @@ _build/nrf52832_xxaa_main.c.o: ../../../main.c \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/log/src/nrf_log_ctrl_internal.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/external/segger_rtt/SEGGER_RTT.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/external/segger_rtt/SEGGER_RTT_Conf.h \
- ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/delay/nrf_delay.h
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/delay/nrf_delay.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/pwm/app_pwm.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/timer/nrf_drv_timer.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_timer.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_peripherals.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/device/nrf52832_peripherals.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/nrf_assert.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/common/nrf_drv_common.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/ppi/nrf_drv_ppi.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_ppi.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/sdk_resources.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_sd_def.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/pwm/nrf_drv_pwm.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_pwm.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/fifo/app_fifo.h
 
 /usr/local/gcc-arm-none-eabi-5_4-2016q3/lib/gcc/arm-none-eabi/5.4.1/include/stdint.h:
 
@@ -160,9 +175,15 @@ _build/nrf52832_xxaa_main.c.o: ../../../main.c \
 
 /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/sys/stdio.h:
 
+/usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/stdlib.h:
+
+/usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/machine/stdlib.h:
+
 /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/string.h:
 
 /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/sys/string.h:
+
+/usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/math.h:
 
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/nordic_common.h:
 
@@ -245,10 +266,6 @@ _build/nrf52832_xxaa_main.c.o: ../../../main.c \
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/ble/common/ble_gatt_db.h:
 
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/common/softdevice_handler/softdevice_handler.h:
-
-/usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/stdlib.h:
-
-/usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/machine/stdlib.h:
 
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_error.h:
 
@@ -341,3 +358,31 @@ _build/nrf52832_xxaa_main.c.o: ../../../main.c \
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/external/segger_rtt/SEGGER_RTT_Conf.h:
 
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/delay/nrf_delay.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/pwm/app_pwm.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/timer/nrf_drv_timer.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_timer.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_peripherals.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/device/nrf52832_peripherals.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/nrf_assert.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/common/nrf_drv_common.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/ppi/nrf_drv_ppi.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_ppi.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/sdk_resources.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_sd_def.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/pwm/nrf_drv_pwm.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_pwm.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/fifo/app_fifo.h:

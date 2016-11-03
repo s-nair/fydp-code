@@ -15,7 +15,9 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "nordic_common.h"
 #include "nrf_sdm.h"
 #include "ble.h"
@@ -41,6 +43,9 @@
 #include "nrf_log_ctrl.h"
 #include "SEGGER_RTT.h"
 #include "nrf_delay.h"
+#include "app_pwm.h"
+#include "nrf_drv_pwm.h"
+#include "app_fifo.h"
 
 
 #if (NRF_SD_BLE_API_VERSION == 3)
@@ -48,7 +53,7 @@
 #endif
 
 #define CENTRAL_LINK_COUNT          0                                   /**< Number of central links used by the application. When changing this number remember to adjust the RAM settings*/
-#define PERIPHERAL_LINK_COUNT       1                                   /**< Number of peripheral links used by the application. When changing this number remember to adjust the RAM settings*/
+#define PERIPHERAL_LINK_COUNT       0                                   /**< Number of peripheral links used by the application. When changing this number remember to adjust the RAM settings*/
 
 #define STRING_BUFFER_LEN           50
 #define BOND_DELETE_ALL_BUTTON_ID   0                                   /**< Button used for deleting all bonded centrals during startup. */
@@ -66,15 +71,22 @@
 #define SEC_PARAM_MAX_KEY_SIZE      16                                  /**< Maximum encryption key size in octets. */
 
 #define SCAN_INTERVAL               0x00A0                              /**< Determines scan interval in units of 0.625 millisecond. */
-#define SCAN_WINDOW                 0x0050                              /**< Determines scan window in units of 0.625 millisecond. */
+#define SCAN_WINDOW                 0x009F                              /**< Determines scan window in units of 0.625 millisecond. */
 
 #define MIN_CONNECTION_INTERVAL     MSEC_TO_UNITS(7.5, UNIT_1_25_MS)    /**< Determines minimum connection interval in millisecond. */
 #define MAX_CONNECTION_INTERVAL     MSEC_TO_UNITS(30, UNIT_1_25_MS)     /**< Determines maximum connection interval in millisecond. */
 #define SLAVE_LATENCY               0                                   /**< Determines slave latency in counts of connection events. */
 #define SUPERVISION_TIMEOUT         MSEC_TO_UNITS(4000, UNIT_10_MS)     /**< Determines supervision time-out in units of 10 millisecond. */
 
-#define TARGET_UUID                 0x7D16                              /**< Target device name that application is looking for. */
-#define UUID16_SIZE                 2                                   /**< Size of 16 bit UUID */
+#define IBEACON_HEADER				0x1AFF4C000215
+#define TARGET_UUID_0				0xFAE37D16A7F65896
+#define TARGET_UUID_1				0xA83768345875DBEB
+
+#define TARGET_MAJOR				9
+#define TARGET_MINOR				16
+
+#define DISAPPEAR_THRESHOLD			10
+#define DELAY_FIFO_LENGTH			3
 
 /**@brief Macro to unpack 16bit unsigned UUID from octet stream. */
 #define UUID16_EXTRACT(DST, SRC) \
@@ -107,13 +119,20 @@ typedef struct
     int8_t    tx_pwr;
 } ibcn_data_t;
 
-static bool               m_memory_access_in_progress;  /**< Flag to keep track of ongoing operations on persistent memory. */
-
-
-/** @brief Scan parameters requested for scanning and connection. */
-static ble_gap_scan_params_t m_scan_param;
+static bool               		m_memory_access_in_progress;  	/**< Flag to keep track of ongoing operations on persistent memory. */
+static ble_gap_scan_params_t 	m_scan_param;   				/** @brief Scan parameters requested for scanning and connection. */
+static volatile uint8_t			attempts = 0;
+static volatile bool			turned_on = false;
+//static volatile app_fifo_t		delay;
+static volatile uint32_t	*	delay;
+static volatile uint32_t		total = 0;
+static volatile uint32_t		actual_delay;
+//static volatile bool			ready_flag;
 
 static void scan_start(void);
+
+//static nrf_drv_pwm_t m_pwm0 = NRF_DRV_PWM_INSTANCE(0);
+APP_PWM_INSTANCE(PWM0,0);  // Create the instance "PWM0" using TIMER0.
 
 
 /**@brief Function for asserts in the SoftDevice.
@@ -133,6 +152,11 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
 }
 
 
+//void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
+//{
+//    ready_flag = true;
+//}
+
 /**
  * @brief Parses advertisement data, providing length and location of the field in case
  *        matching data is found.
@@ -147,8 +171,9 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
  */
 static uint32_t ibcn_adv_report_parse(data_t * advdata, ibcn_data_t * ibcn_data)
 {
-    uint32_t  index = 0;
+    int		  index = 0;
     uint8_t * p_data;
+    uint64_t  tmp;
 
     p_data = advdata->p_data;
 
@@ -171,9 +196,57 @@ static uint32_t ibcn_adv_report_parse(data_t * advdata, ibcn_data_t * ibcn_data)
     ibcn_data->minor = (p_data[index + 2] << 8) | (p_data[index + 3]);
     ibcn_data->tx_pwr = (int8_t)p_data[index + 4];
 
-    return NRF_SUCCESS;
+    tmp = IBEACON_HEADER;
+    for (index = ibcn_data->header_len - 1; index >= 0; index--) {
+    	if (ibcn_data->header_data[index] != (tmp & 0xFF))
+    		return NRF_ERROR_NOT_FOUND;
+    	tmp >>= 8;
+    }
 
-    //return NRF_ERROR_NOT_FOUND;
+    tmp = TARGET_UUID_1;
+	for (index = ibcn_data->uuid_len - 1; index >= (ibcn_data->uuid_len / 2); index--) {
+		if (ibcn_data->uuid[index] != (tmp & 0xFF))
+			return NRF_ERROR_NOT_FOUND;
+		tmp >>= 8;
+	}
+
+	tmp = TARGET_UUID_0;
+	for (index = (ibcn_data->uuid_len / 2) - 1; index >= 0; index--) {
+		if (ibcn_data->uuid[index] != (tmp & 0xFF))
+			return NRF_ERROR_NOT_FOUND;
+		tmp >>= 8;
+	}
+
+    return NRF_SUCCESS;
+}
+
+
+static uint32_t ibcn_find_broadcaster(ibcn_data_t * ibcn_data, uint16_t target_major, uint16_t target_minor) {
+	if (ibcn_data->major != target_major)
+	    	return NRF_ERROR_NOT_FOUND;
+
+	if (ibcn_data->minor != target_minor)
+		return NRF_ERROR_NOT_FOUND;
+
+	return NRF_SUCCESS;
+}
+
+
+/* Borrowed from David G Young (http://stackoverflow.com/questions/20416218/understanding-ibeacon-distancing) */
+static double calculateAccuracy(int8_t txPower, int8_t rssi) {
+	double accuracy;
+
+	if (rssi == 0) {
+		return -1.0; // if we cannot determine accuracy, return -1.
+	}
+
+	double ratio = rssi*1.0/txPower;
+	if (ratio < 1.0) {
+		return pow(ratio,10);
+	} else {
+		accuracy = (0.89976)*pow(ratio,7.7095) + 0.111;
+		return accuracy;
+  	}
 }
 
 
@@ -181,19 +254,19 @@ static uint32_t ibcn_adv_report_parse(data_t * advdata, ibcn_data_t * ibcn_data)
  *
  * @note This function will not return.
  */
-static void sleep_mode_enter(void)
-{
-    uint32_t err_code = bsp_indication_set(BSP_INDICATE_IDLE);
-    APP_ERROR_CHECK(err_code);
-
-    // Prepare wakeup buttons.
-    err_code = bsp_btn_ble_sleep_mode_prepare();
-    APP_ERROR_CHECK(err_code);
-
-    // Go to system-off mode (this function will not return; wakeup will cause a reset).
-    err_code = sd_power_system_off();
-    APP_ERROR_CHECK(err_code);
-}
+//static void sleep_mode_enter(void)
+//{
+//    uint32_t err_code = bsp_indication_set(BSP_INDICATE_IDLE);
+//    APP_ERROR_CHECK(err_code);
+//
+//    // Prepare wakeup buttons.
+//    err_code = bsp_btn_ble_sleep_mode_prepare();
+//    APP_ERROR_CHECK(err_code);
+//
+//    // Go to system-off mode (this function will not return; wakeup will cause a reset).
+//    err_code = sd_power_system_off();
+//    APP_ERROR_CHECK(err_code);
+//}
 
 
 /**@brief Function for handling the Application's BLE Stack events.
@@ -211,19 +284,78 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
         {
         	//SEGGER_RTT_WriteString(0, "something found!\n\r");
 
-            data_t adv_data;
+            data_t 		adv_data;
             ibcn_data_t ibcn_data;
-            //uint32_t err_code;
+            int8_t		rssi;
+            double		distance;
+            uint32_t	tmp;
+            uint32_t	current_delay;
+            int8_t		i;
 
             // Initialize advertisement report for parsing.
             adv_data.p_data = (uint8_t *)p_gap_evt->params.adv_report.data;
             adv_data.data_len = p_gap_evt->params.adv_report.dlen;
+            rssi = p_gap_evt->params.adv_report.rssi;
 
-            ibcn_adv_report_parse(&adv_data, &ibcn_data);
+            if (ibcn_adv_report_parse(&adv_data, &ibcn_data) == NRF_SUCCESS && ibcn_find_broadcaster(&ibcn_data, TARGET_MAJOR, TARGET_MINOR) == NRF_SUCCESS) {
 
-            if (ibcn_data.major == 0x9 && ibcn_data.minor == 0x10) {
-            	LEDS_ON(BSP_LED_1_MASK);
+            	if (~turned_on) {
+					//LEDS_ON(BSP_LED_1_MASK);
+					turned_on = true;
+            	}
+
+            	attempts = 0;
+            	total = 0;
+
+            	distance = calculateAccuracy(ibcn_data.tx_pwr, rssi);
+
+            	current_delay = 50 + (uint32_t)(distance * 950);
+            	tmp = delay[DELAY_FIFO_LENGTH - 1];
+
+//            	app_fifo_get(&delay, &tmp);
+//            	app_fifo_put(&delay, current_distance);
+
+            	for (i = DELAY_FIFO_LENGTH; i > 1; i++) {
+            		delay[i - 1] = delay[i - 2];
+            		total += delay[i - 1];
+            	}
+            	delay[0] = current_delay;
+            	total += delay[0];
+
+            	//total += current_delay - tmp;
+				actual_delay = total / DELAY_FIFO_LENGTH;
+
+            	//ready_flag = false;
+				/* Set the duty cycle - keep trying until PWM is ready... */
+				//while (app_pwm_channel_duty_set(&PWM0, 0, distance) == NRF_ERROR_BUSY);
+
+            } else if (attempts < DISAPPEAR_THRESHOLD) {
+
+            	attempts++;
+
+            } else if (turned_on) {
+
+            	//LEDS_OFF(BSP_LED_1_MASK);
+            	turned_on = false;
+            	//app_fifo_flush(&delay);
+            	for (i = 0; i < DELAY_FIFO_LENGTH; i++)
+            	    delay[i] = 0;
+            	actual_delay = 0;
+
             }
+
+//            if (err_code == NRF_SUCCESS) {
+//            	err_code = ibcn_find_broadcaster(&ibcn_data, TARGET_MAJOR, TARGET_MINOR);
+//            	if (err_code == NRF_SUCCESS) {
+//            		LEDS_ON(BSP_LED_1_MASK);
+//            	}
+//            	else {
+//            		LEDS_OFF(BSP_LED_1_MASK);
+//            	}
+//            }
+//            else {
+//            	LEDS_OFF(BSP_LED_1_MASK);
+//            }
 
         }break; // BLE_GAP_EVT_ADV_REPORT
 
@@ -270,8 +402,6 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
     // Modules which depend on ble_conn_state, like Peer Manager,
     // should have their callbacks invoked after ble_conn_state's.
-    pm_on_ble_evt(p_ble_evt);
-    bsp_btn_ble_on_ble_evt(p_ble_evt);
     on_ble_evt(p_ble_evt);
 }
 
@@ -333,18 +463,7 @@ static void ble_stack_init(void)
  *
  * @param[in]   event   Event generated by button press.
  */
-void bsp_event_handler(bsp_event_t event)
-{
-    switch (event)
-    {
-        case BSP_EVENT_SLEEP:
-            sleep_mode_enter();
-            break;
-
-        default:
-            break;
-    }
-}
+void bsp_event_handler(bsp_event_t event) {}
 
 
 /**@brief Function to start scanning.
@@ -383,15 +502,13 @@ static void scan_start(void)
 
     (void) sd_ble_gap_scan_stop();
 
+    	ret = 0;
         ret = sd_ble_gap_scan_start(&m_scan_param);
         // It is okay to ignore this error since we are stopping the scan anyway.
         if (ret != NRF_ERROR_INVALID_STATE)
         {
             APP_ERROR_CHECK(ret);
         }
-
-    ret = bsp_indication_set(BSP_INDICATE_SCANNING);
-    APP_ERROR_CHECK(ret);
 }
 
 
@@ -426,16 +543,19 @@ static void log_init(void)
 
 /** @brief Function for the Power manager.
  */
-static void power_manage(void)
-{
-    uint32_t err_code = sd_app_evt_wait();
-    APP_ERROR_CHECK(err_code);
-}
+//static void power_manage(void)
+//{
+//    uint32_t err_code = sd_app_evt_wait();
+//    APP_ERROR_CHECK(err_code);
+//}
 
 
 int main(void)
 {
-    bool erase_bonds;
+    bool		erase_bonds;
+    //uint32_t 	err_code;
+    //uint16_t	delay_init[DELAY_FIFO_LENGTH];
+    int8_t		i;
 
     // Initialize.
     APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, NULL);
@@ -447,6 +567,19 @@ int main(void)
         NRF_LOG_INFO("Bonds erased!\r\n");
     }
 
+    //memset(delay, 0, DELAY_FIFO_LENGTH);
+    for (i = 0; i < DELAY_FIFO_LENGTH; i++)
+    	delay[i] = 0;
+    //app_fifo_init(&delay, delay_init, DELAY_FIFO_LENGTH);
+
+//    /* 1-channel PWM, 200Hz, output on DK LED pin. */
+//    app_pwm_config_t pwm0_cfg = APP_PWM_DEFAULT_CONFIG_1CH(5000L, BSP_LED_0);
+//
+//    /* Initialize and enable PWM. */
+//	err_code = app_pwm_init(&PWM0,&pwm0_cfg,pwm_ready_callback);
+//	APP_ERROR_CHECK(err_code);
+//	app_pwm_enable(&PWM0);
+
     // Start scanning for peripherals and initiate connection
     // with devices that advertise Heart Rate UUID.
     NRF_LOG_INFO("Heart rate collector example\r\n");
@@ -454,11 +587,15 @@ int main(void)
 
     for (;;)
     {
-        if (NRF_LOG_PROCESS() == false)
-        {
-            power_manage();
-        }
+    	if (actual_delay) {
+			LEDS_INVERT(BSP_LED_3_MASK);
+			nrf_delay_ms(actual_delay);
+    	} else {
+    		LEDS_OFF(BSP_LED_3_MASK);
+    	}
+//        if (NRF_LOG_PROCESS() == false)
+//        {
+//            power_manage();
+//        }
     }
 }
-
-//SEGGER_RTT_WriteString(0, "Hello World!\n\r");
