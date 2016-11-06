@@ -70,8 +70,8 @@
 #define SEC_PARAM_MIN_KEY_SIZE      7                                   /**< Minimum encryption key size in octets. */
 #define SEC_PARAM_MAX_KEY_SIZE      16                                  /**< Maximum encryption key size in octets. */
 
-#define SCAN_INTERVAL               0x00A0                              /**< Determines scan interval in units of 0.625 millisecond. */
-#define SCAN_WINDOW                 0x009F                              /**< Determines scan window in units of 0.625 millisecond. */
+#define SCAN_INTERVAL               0x0050                              /**< Determines scan interval in units of 0.625 millisecond. */
+#define SCAN_WINDOW                 0x004F                              /**< Determines scan window in units of 0.625 millisecond. */
 
 #define MIN_CONNECTION_INTERVAL     MSEC_TO_UNITS(7.5, UNIT_1_25_MS)    /**< Determines minimum connection interval in millisecond. */
 #define MAX_CONNECTION_INTERVAL     MSEC_TO_UNITS(30, UNIT_1_25_MS)     /**< Determines maximum connection interval in millisecond. */
@@ -85,8 +85,8 @@
 #define TARGET_MAJOR				9
 #define TARGET_MINOR				16
 
-#define DISAPPEAR_THRESHOLD			10
-#define DELAY_FIFO_LENGTH			3
+#define DISAPPEAR_THRESHOLD			20
+#define DELAY_FIFO_LENGTH			10
 
 /**@brief Macro to unpack 16bit unsigned UUID from octet stream. */
 #define UUID16_EXTRACT(DST, SRC) \
@@ -121,11 +121,11 @@ typedef struct
 
 static bool               		m_memory_access_in_progress;  	/**< Flag to keep track of ongoing operations on persistent memory. */
 static ble_gap_scan_params_t 	m_scan_param;   				/** @brief Scan parameters requested for scanning and connection. */
-static volatile uint8_t			attempts = 0;
-static volatile bool			turned_on = false;
+static volatile uint8_t			attempts;
+static volatile bool			turned_on;
 //static volatile app_fifo_t		delay;
-static volatile uint32_t	*	delay;
-static volatile uint32_t		total = 0;
+static volatile uint32_t		delay[DELAY_FIFO_LENGTH];
+static volatile uint32_t		total;
 static volatile uint32_t		actual_delay;
 //static volatile bool			ready_flag;
 
@@ -288,7 +288,6 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             ibcn_data_t ibcn_data;
             int8_t		rssi;
             double		distance;
-            uint32_t	tmp;
             uint32_t	current_delay;
             int8_t		i;
 
@@ -299,35 +298,25 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 
             if (ibcn_adv_report_parse(&adv_data, &ibcn_data) == NRF_SUCCESS && ibcn_find_broadcaster(&ibcn_data, TARGET_MAJOR, TARGET_MINOR) == NRF_SUCCESS) {
 
-            	if (~turned_on) {
+            	if (!turned_on) {
 					//LEDS_ON(BSP_LED_1_MASK);
 					turned_on = true;
+					//SEGGER_RTT_WriteString(0, "phone found!\n\r");
             	}
-
             	attempts = 0;
             	total = 0;
 
             	distance = calculateAccuracy(ibcn_data.tx_pwr, rssi);
-
             	current_delay = 50 + (uint32_t)(distance * 950);
-            	tmp = delay[DELAY_FIFO_LENGTH - 1];
 
-//            	app_fifo_get(&delay, &tmp);
-//            	app_fifo_put(&delay, current_distance);
-
-            	for (i = DELAY_FIFO_LENGTH; i > 1; i++) {
-            		delay[i - 1] = delay[i - 2];
-            		total += delay[i - 1];
+            	for (i = 0; i < DELAY_FIFO_LENGTH - 1; i++) {
+            		delay[i] = delay[i + 1];
+            		total += delay[0];
             	}
-            	delay[0] = current_delay;
-            	total += delay[0];
+            	delay[DELAY_FIFO_LENGTH - 1] = current_delay;
+            	total += current_delay;
 
-            	//total += current_delay - tmp;
-				actual_delay = total / DELAY_FIFO_LENGTH;
-
-            	//ready_flag = false;
-				/* Set the duty cycle - keep trying until PWM is ready... */
-				//while (app_pwm_channel_duty_set(&PWM0, 0, distance) == NRF_ERROR_BUSY);
+            	actual_delay = (total + actual_delay) / DELAY_FIFO_LENGTH + 1;
 
             } else if (attempts < DISAPPEAR_THRESHOLD) {
 
@@ -337,25 +326,9 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 
             	//LEDS_OFF(BSP_LED_1_MASK);
             	turned_on = false;
-            	//app_fifo_flush(&delay);
-            	for (i = 0; i < DELAY_FIFO_LENGTH; i++)
-            	    delay[i] = 0;
-            	actual_delay = 0;
+            	//SEGGER_RTT_WriteString(0, "phone lost!\n\r");
 
             }
-
-//            if (err_code == NRF_SUCCESS) {
-//            	err_code = ibcn_find_broadcaster(&ibcn_data, TARGET_MAJOR, TARGET_MINOR);
-//            	if (err_code == NRF_SUCCESS) {
-//            		LEDS_ON(BSP_LED_1_MASK);
-//            	}
-//            	else {
-//            		LEDS_OFF(BSP_LED_1_MASK);
-//            	}
-//            }
-//            else {
-//            	LEDS_OFF(BSP_LED_1_MASK);
-//            }
 
         }break; // BLE_GAP_EVT_ADV_REPORT
 
@@ -554,7 +527,7 @@ int main(void)
 {
     bool		erase_bonds;
     //uint32_t 	err_code;
-    //uint16_t	delay_init[DELAY_FIFO_LENGTH];
+    //uint32_t	delay_init[DELAY_FIFO_LENGTH];
     int8_t		i;
 
     // Initialize.
@@ -567,9 +540,8 @@ int main(void)
         NRF_LOG_INFO("Bonds erased!\r\n");
     }
 
-    //memset(delay, 0, DELAY_FIFO_LENGTH);
     for (i = 0; i < DELAY_FIFO_LENGTH; i++)
-    	delay[i] = 0;
+    	delay[i] = 500;
     //app_fifo_init(&delay, delay_init, DELAY_FIFO_LENGTH);
 
 //    /* 1-channel PWM, 200Hz, output on DK LED pin. */
@@ -580,6 +552,11 @@ int main(void)
 //	APP_ERROR_CHECK(err_code);
 //	app_pwm_enable(&PWM0);
 
+    attempts = DISAPPEAR_THRESHOLD;
+    //total = 500 * DELAY_FIFO_LENGTH;
+    turned_on = false;
+    //actual_delay = 500;
+
     // Start scanning for peripherals and initiate connection
     // with devices that advertise Heart Rate UUID.
     NRF_LOG_INFO("Heart rate collector example\r\n");
@@ -587,7 +564,7 @@ int main(void)
 
     for (;;)
     {
-    	if (actual_delay) {
+    	if (turned_on) {
 			LEDS_INVERT(BSP_LED_3_MASK);
 			nrf_delay_ms(actual_delay);
     	} else {

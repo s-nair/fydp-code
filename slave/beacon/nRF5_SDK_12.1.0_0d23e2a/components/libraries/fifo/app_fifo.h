@@ -34,9 +34,9 @@ extern "C" {
  *          Also, it keeps the information about which memory is allocated for the buffer
  *          and its size. This structure must be initialized by app_fifo_init() before use.
  */
-volatile typedef struct
+typedef struct
 {
-    uint16_t *          p_buf;           /**< Pointer to FIFO buffer memory.                      */
+    uint8_t *          p_buf;           /**< Pointer to FIFO buffer memory.                      */
     uint16_t           buf_size_mask;   /**< Read/write index mask. Also used for size checking. */
     volatile uint32_t  read_pos;        /**< Next read position in the FIFO buffer.              */
     volatile uint32_t  write_pos;       /**< Next write position in the FIFO buffer.             */
@@ -52,7 +52,7 @@ volatile typedef struct
  * @retval     NRF_ERROR_NULL           If a NULL pointer is provided as buffer.
  * @retval     NRF_ERROR_INVALID_LENGTH If size of buffer provided is not a power of two.
  */
-uint32_t app_fifo_init(app_fifo_t * p_fifo, uint16_t * p_buf, uint16_t buf_size);
+uint32_t app_fifo_init(app_fifo_t * p_fifo, uint8_t * p_buf, uint16_t buf_size);
 
 /**@brief Function for adding an element to the FIFO.
  *
@@ -62,7 +62,7 @@ uint32_t app_fifo_init(app_fifo_t * p_fifo, uint16_t * p_buf, uint16_t buf_size)
  * @retval     NRF_SUCCESS              If an element has been successfully added to the FIFO.
  * @retval     NRF_ERROR_NO_MEM         If the FIFO is full.
  */
-uint32_t app_fifo_put(app_fifo_t * p_fifo, uint16_t byte);
+uint32_t app_fifo_put(app_fifo_t * p_fifo, uint8_t byte);
 
 /**@brief Function for getting the next element from the FIFO.
  *
@@ -72,7 +72,7 @@ uint32_t app_fifo_put(app_fifo_t * p_fifo, uint16_t byte);
  * @retval     NRF_SUCCESS              If an element was returned.
  * @retval     NRF_ERROR_NOT_FOUND      If there are no more elements in the queue.
  */
-uint32_t app_fifo_get(app_fifo_t * p_fifo, uint16_t * p_byte);
+uint32_t app_fifo_get(app_fifo_t * p_fifo, uint8_t * p_byte);
 
 /**@brief Function for looking at an element in the FIFO, without consuming it.
  *
@@ -84,7 +84,7 @@ uint32_t app_fifo_get(app_fifo_t * p_fifo, uint16_t * p_byte);
  * @retval     NRF_ERROR_NOT_FOUND      If there are no more elements in the queue, or the index was
  *                                      too large.
  */
-uint32_t app_fifo_peek(app_fifo_t * p_fifo, uint16_t index, uint16_t * p_byte);
+uint32_t app_fifo_peek(app_fifo_t * p_fifo, uint16_t index, uint8_t * p_byte);
 
 /**@brief Function for flushing the FIFO.
  *
@@ -116,7 +116,7 @@ uint32_t app_fifo_flush(app_fifo_t * p_fifo);
  *                                  be NULL.
  * @retval     NRF_ERROR_NOT_FOUND  If the FIFO is empty.
  */
-uint32_t app_fifo_read(app_fifo_t * p_fifo, uint16_t * p_byte_array, uint32_t * p_size);
+uint32_t app_fifo_read(app_fifo_t * p_fifo, uint8_t * p_byte_array, uint32_t * p_size);
 
 /**@brief Function for writing bytes to the FIFO.
  *
@@ -142,7 +142,7 @@ uint32_t app_fifo_read(app_fifo_t * p_fifo, uint16_t * p_byte_array, uint32_t * 
  * @retval     NRF_ERROR_NO_MEM  If the FIFO is full.
  *
  */
-uint32_t app_fifo_write(app_fifo_t * p_fifo, uint16_t const * p_byte_array, uint32_t * p_size);
+uint32_t app_fifo_write(app_fifo_t * p_fifo, uint8_t const * p_byte_array, uint32_t * p_size);
 
 
 #ifdef __cplusplus
