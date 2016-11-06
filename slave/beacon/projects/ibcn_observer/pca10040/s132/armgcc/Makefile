@@ -30,7 +30,7 @@ SRC_FILES += \
   $(SDK_ROOT)/components/drivers_nrf/common/nrf_drv_common.c \
   $(SDK_ROOT)/components/drivers_nrf/gpiote/nrf_drv_gpiote.c \
   $(SDK_ROOT)/components/drivers_nrf/uart/nrf_drv_uart.c \
-  $(SDK_ROOT)/components/drivers_nrf/pwm/nrf_drv_pwm.c \
+  $(SDK_ROOT)/components/drivers_nrf/spi_master/nrf_drv_spi.c \
   $(SDK_ROOT)/examples/bsp/bsp.c \
   $(SDK_ROOT)/examples/bsp/bsp_btn_ble.c \
   $(PROJ_DIR)/main.c \
@@ -151,8 +151,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/softdevice/common/softdevice_handler \
   $(SDK_ROOT)/components/ble/ble_services/ble_hrs \
   $(SDK_ROOT)/components/libraries/log/src \
-  $(SDK_ROOT)/components/libraries/pwm \
-  $(SDK_ROOT)/components/drivers_nrf/pwm \
+  $(SDK_ROOT)/components/drivers_nrf/spi_master \
 
 # Libraries common to all targets
 LIB_FILES += \

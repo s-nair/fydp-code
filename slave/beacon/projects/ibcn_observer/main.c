@@ -19,64 +19,40 @@
 #include <string.h>
 #include <math.h>
 #include "nordic_common.h"
-#include "nrf_sdm.h"
 #include "ble.h"
 #include "ble_hci.h"
-#include "ble_db_discovery.h"
 #include "softdevice_handler.h"
 #include "app_util.h"
+#include "app_util_platform.h"
 #include "app_error.h"
 #include "boards.h"
-#include "nrf_gpio.h"
-#include "peer_manager.h"
-#include "ble_hrs_c.h"
-#include "ble_bas_c.h"
 #include "app_util.h"
 #include "app_timer.h"
 #include "bsp.h"
 #include "bsp_btn_ble.h"
-#include "fds.h"
-#include "fstorage.h"
-#include "ble_conn_state.h"
 #define NRF_LOG_MODULE_NAME "APP"
+#include "nrf_sdm.h"
+#include "nrf_gpio.h"
+#include "nrf_drv_spi.h"
+#include "nrf_delay.h"
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "SEGGER_RTT.h"
-#include "nrf_delay.h"
-#include "app_pwm.h"
-#include "nrf_drv_pwm.h"
-#include "app_fifo.h"
+#include "fstorage.h"
 
 
 #if (NRF_SD_BLE_API_VERSION == 3)
-#define NRF_BLE_MAX_MTU_SIZE        GATT_MTU_SIZE_DEFAULT               /**< MTU size used in the softdevice enabling and to reply to a BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST event. */
+	#define NRF_BLE_MAX_MTU_SIZE        GATT_MTU_SIZE_DEFAULT               /**< MTU size used in the softdevice enabling and to reply to a BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST event. */
 #endif
 
 #define CENTRAL_LINK_COUNT          0                                   /**< Number of central links used by the application. When changing this number remember to adjust the RAM settings*/
 #define PERIPHERAL_LINK_COUNT       0                                   /**< Number of peripheral links used by the application. When changing this number remember to adjust the RAM settings*/
 
-#define STRING_BUFFER_LEN           50
-#define BOND_DELETE_ALL_BUTTON_ID   0                                   /**< Button used for deleting all bonded centrals during startup. */
-
 #define APP_TIMER_PRESCALER         0                                   /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE     2                                   /**< Size of timer operation queues. */
 
-#define SEC_PARAM_BOND              1                                   /**< Perform bonding. */
-#define SEC_PARAM_MITM              0                                   /**< Man In The Middle protection not required. */
-#define SEC_PARAM_LESC              0                                   /**< LE Secure Connections not enabled. */
-#define SEC_PARAM_KEYPRESS          0                                   /**< Keypress notifications not enabled. */
-#define SEC_PARAM_IO_CAPABILITIES   BLE_GAP_IO_CAPS_NONE                /**< No I/O capabilities. */
-#define SEC_PARAM_OOB               0                                   /**< Out Of Band data not available. */
-#define SEC_PARAM_MIN_KEY_SIZE      7                                   /**< Minimum encryption key size in octets. */
-#define SEC_PARAM_MAX_KEY_SIZE      16                                  /**< Maximum encryption key size in octets. */
-
 #define SCAN_INTERVAL               0x0050                              /**< Determines scan interval in units of 0.625 millisecond. */
 #define SCAN_WINDOW                 0x004F                              /**< Determines scan window in units of 0.625 millisecond. */
-
-#define MIN_CONNECTION_INTERVAL     MSEC_TO_UNITS(7.5, UNIT_1_25_MS)    /**< Determines minimum connection interval in millisecond. */
-#define MAX_CONNECTION_INTERVAL     MSEC_TO_UNITS(30, UNIT_1_25_MS)     /**< Determines maximum connection interval in millisecond. */
-#define SLAVE_LATENCY               0                                   /**< Determines slave latency in counts of connection events. */
-#define SUPERVISION_TIMEOUT         MSEC_TO_UNITS(4000, UNIT_10_MS)     /**< Determines supervision time-out in units of 10 millisecond. */
 
 #define IBEACON_HEADER				0x1AFF4C000215
 #define TARGET_UUID_0				0xFAE37D16A7F65896
@@ -89,6 +65,11 @@
 #define DELAY_MAX					1000
 #define DELAY_MIN					50
 
+#define SPI_SS_PIN					25
+#define SPI_MISO_PIN				24
+#define SPI_MOSI_PIN				23
+#define SPI_SCK_PIN					22
+
 /**@brief Macro to unpack 16bit unsigned UUID from octet stream. */
 #define UUID16_EXTRACT(DST, SRC) \
     do                           \
@@ -98,6 +79,9 @@
         (*(DST))  |= (SRC)[0];   \
     } while (0)
 
+#ifndef min
+	#define min(a,b) ((a) < (b) ? (a) : (b))
+#endif
 
 /**@brief Variable length data encapsulation in terms of length and pointer to data */
 typedef struct
@@ -122,16 +106,38 @@ typedef struct
 
 static bool               		m_memory_access_in_progress;  	/**< Flag to keep track of ongoing operations on persistent memory. */
 static ble_gap_scan_params_t 	m_scan_param;   				/** @brief Scan parameters requested for scanning and connection. */
+
 static volatile uint8_t			attempts;
 static volatile bool			turned_on;
 static volatile uint32_t		delay[DELAY_FIFO_LENGTH];
 static volatile uint32_t		delay_avg[DELAY_FIFO_LENGTH];
 static volatile uint32_t		actual_delay;
 
+#define SPI_INSTANCE  0 /**< SPI instance index. */
+static const nrf_drv_spi_t spi = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);  /**< SPI instance. */
+static volatile bool spi_xfer_done;  /**< Flag used to indicate that SPI instance completed the transfer. */
+#define TEST_STRING "Nordic"
+static uint8_t       m_tx_buf[] = TEST_STRING;           /**< TX buffer. */
+static uint8_t       m_rx_buf[sizeof(TEST_STRING) + 1];    /**< RX buffer. */
+static const uint8_t m_length = sizeof(m_tx_buf);        /**< Transfer length. */
+
 static void scan_start(void);
 
-//static nrf_drv_pwm_t m_pwm0 = NRF_DRV_PWM_INSTANCE(0);
-APP_PWM_INSTANCE(PWM0,0);  // Create the instance "PWM0" using TIMER0.
+
+/**
+ * @brief SPI user event handler.
+ * @param event
+ */
+void spi_event_handler(nrf_drv_spi_evt_t const * p_event)
+{
+    spi_xfer_done = true;
+    NRF_LOG_INFO("Transfer completed.\r\n");
+    if (m_rx_buf[0] != 0)
+    {
+        NRF_LOG_INFO(" Received: \r\n");
+        NRF_LOG_HEXDUMP_INFO(m_rx_buf, strlen((const char *)m_rx_buf));
+    }
+}
 
 
 /**@brief Function for asserts in the SoftDevice.
@@ -287,9 +293,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             	total_avg = 0;
 
             	distance = calculateAccuracy(ibcn_data.tx_pwr, rssi);
-            	current_delay = DELAY_MIN + (uint32_t)(distance * DELAY_MAX - DELAY_MIN);
-            	if (current_delay > DELAY_MAX)
-            		current_delay = DELAY_MAX;
+            	current_delay = min(DELAY_MAX, DELAY_MIN + (uint32_t)(distance * DELAY_MAX - DELAY_MIN));
 
             	for (i = 0; i < DELAY_FIFO_LENGTH - 1; i++) {
             		delay[i] = delay[i + 1];
@@ -519,6 +523,14 @@ int main(void)
     attempts = DISAPPEAR_THRESHOLD;
     turned_on = false;
 
+    nrf_drv_spi_config_t spi_config = NRF_DRV_SPI_DEFAULT_CONFIG;
+	spi_config.ss_pin   = SPI_SS_PIN;
+	spi_config.miso_pin = SPI_MISO_PIN;
+	spi_config.mosi_pin = SPI_MOSI_PIN;
+	spi_config.sck_pin  = SPI_SCK_PIN;
+	spi_config.frequency= NRF_DRV_SPI_FREQ_500K;
+	APP_ERROR_CHECK(nrf_drv_spi_init(&spi, &spi_config, spi_event_handler));
+
     scan_start();
 
     for (;;)
@@ -529,5 +541,18 @@ int main(void)
     	} else {
     		LEDS_OFF(BSP_LED_3_MASK);
     	}
+
+//    	// Reset rx buffer and transfer done flag
+//		memset(m_rx_buf, 0, m_length);
+//		spi_xfer_done = false;
+//
+//		APP_ERROR_CHECK(nrf_drv_spi_transfer(&spi, m_tx_buf, m_length, m_rx_buf, m_length));
+//
+//		while (!spi_xfer_done)
+//		{
+//			__WFE();
+//		}
+//
+//		NRF_LOG_FLUSH();
     }
 }

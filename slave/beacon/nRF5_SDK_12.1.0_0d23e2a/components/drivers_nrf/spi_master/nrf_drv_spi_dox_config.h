@@ -10,7 +10,7 @@
  *
  * @note This is an NRF_CONFIG macro.
  */
-#define SPI_ENABLED
+#define SPI_ENABLED		1
 
 /** @brief Enables logging in the module.
  *
@@ -18,7 +18,7 @@
  *
  * @note This is an NRF_CONFIG macro.
  */
-#define SPI_CONFIG_LOG_ENABLED
+#define SPI_CONFIG_LOG_ENABLED	0
 
 /** @brief Default Severity level
  *
@@ -31,7 +31,7 @@
  *
  * @note This is an NRF_CONFIG macro.
  */
-#define SPI_CONFIG_LOG_LEVEL
+#define SPI_CONFIG_LOG_LEVEL	0
 
 
 /** @brief ANSI escape code prefix.
@@ -87,7 +87,7 @@
  *
  * @note This is an NRF_CONFIG macro.
  */
-#define SPI_DEFAULT_CONFIG_IRQ_PRIORITY
+#define SPI_DEFAULT_CONFIG_IRQ_PRIORITY		2
 
 
 /** @brief Enable SPI0 instance
@@ -96,7 +96,7 @@
  *
  * @note This is an NRF_CONFIG macro.
  */
-#define SPI0_ENABLED
+#define SPI0_ENABLED	1
 
 /** @brief Use EasyDMA
  *
@@ -104,7 +104,7 @@
  *
  * @note This is an NRF_CONFIG macro.
  */
-#define SPI0_USE_EASY_DMA
+#define SPI0_USE_EASY_DMA	1
 
 
 

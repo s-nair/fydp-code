@@ -231,6 +231,11 @@
 			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/pwm/nrf_drv_pwm.c</location>
 		</link>
 		<link>
+			<name>nRF_Drivers/nrf_drv_spi.c</name>
+			<type>1</type>
+			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/spi_master/nrf_drv_spi.c</location>
+		</link>
+		<link>
 			<name>nRF_Drivers/nrf_drv_uart.c</name>
 			<type>1</type>
 			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/uart/nrf_drv_uart.c</location>
