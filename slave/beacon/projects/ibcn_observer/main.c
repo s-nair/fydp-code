@@ -81,12 +81,13 @@
 #define IBEACON_HEADER				0x1AFF4C000215
 #define TARGET_UUID_0				0xFAE37D16A7F65896
 #define TARGET_UUID_1				0xA83768345875DBEB
-
 #define TARGET_MAJOR				9
 #define TARGET_MINOR				16
 
 #define DISAPPEAR_THRESHOLD			20
 #define DELAY_FIFO_LENGTH			10
+#define DELAY_MAX					1000
+#define DELAY_MIN					50
 
 /**@brief Macro to unpack 16bit unsigned UUID from octet stream. */
 #define UUID16_EXTRACT(DST, SRC) \
@@ -123,11 +124,9 @@ static bool               		m_memory_access_in_progress;  	/**< Flag to keep tra
 static ble_gap_scan_params_t 	m_scan_param;   				/** @brief Scan parameters requested for scanning and connection. */
 static volatile uint8_t			attempts;
 static volatile bool			turned_on;
-//static volatile app_fifo_t		delay;
 static volatile uint32_t		delay[DELAY_FIFO_LENGTH];
-static volatile uint32_t		total;
+static volatile uint32_t		delay_avg[DELAY_FIFO_LENGTH];
 static volatile uint32_t		actual_delay;
-//static volatile bool			ready_flag;
 
 static void scan_start(void);
 
@@ -151,11 +150,6 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
     app_error_handler(0xDEADBEEF, line_num, p_file_name);
 }
 
-
-//void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
-//{
-//    ready_flag = true;
-//}
 
 /**
  * @brief Parses advertisement data, providing length and location of the field in case
@@ -250,25 +244,6 @@ static double calculateAccuracy(int8_t txPower, int8_t rssi) {
 }
 
 
-/**@brief Function for putting the chip into sleep mode.
- *
- * @note This function will not return.
- */
-//static void sleep_mode_enter(void)
-//{
-//    uint32_t err_code = bsp_indication_set(BSP_INDICATE_IDLE);
-//    APP_ERROR_CHECK(err_code);
-//
-//    // Prepare wakeup buttons.
-//    err_code = bsp_btn_ble_sleep_mode_prepare();
-//    APP_ERROR_CHECK(err_code);
-//
-//    // Go to system-off mode (this function will not return; wakeup will cause a reset).
-//    err_code = sd_power_system_off();
-//    APP_ERROR_CHECK(err_code);
-//}
-
-
 /**@brief Function for handling the Application's BLE Stack events.
  *
  * @param[in]   p_ble_evt   Bluetooth stack event.
@@ -289,6 +264,10 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             int8_t		rssi;
             double		distance;
             uint32_t	current_delay;
+
+            uint32_t	total_current = 0;
+            uint32_t	total_avg = 0;
+            uint32_t	tmp;
             int8_t		i;
 
             // Initialize advertisement report for parsing.
@@ -304,19 +283,30 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
 					//SEGGER_RTT_WriteString(0, "phone found!\n\r");
             	}
             	attempts = 0;
-            	total = 0;
+            	total_current = 0;
+            	total_avg = 0;
 
             	distance = calculateAccuracy(ibcn_data.tx_pwr, rssi);
-            	current_delay = 50 + (uint32_t)(distance * 950);
+            	current_delay = DELAY_MIN + (uint32_t)(distance * DELAY_MAX - DELAY_MIN);
+            	if (current_delay > DELAY_MAX)
+            		current_delay = DELAY_MAX;
 
             	for (i = 0; i < DELAY_FIFO_LENGTH - 1; i++) {
             		delay[i] = delay[i + 1];
-            		total += delay[0];
+            		delay_avg[i] = delay_avg[i + 1];
+            		total_current += delay[i];
+            		total_avg += delay_avg[i];
             	}
-            	delay[DELAY_FIFO_LENGTH - 1] = current_delay;
-            	total += current_delay;
 
-            	actual_delay = (total + actual_delay) / DELAY_FIFO_LENGTH + 1;
+            	delay[DELAY_FIFO_LENGTH - 1] = current_delay;
+            	total_current += current_delay;
+
+            	tmp = total_current / DELAY_FIFO_LENGTH;
+
+            	delay_avg[DELAY_FIFO_LENGTH - 1] = tmp;
+            	total_avg += tmp;
+
+            	actual_delay = total_avg / DELAY_FIFO_LENGTH;
 
             } else if (attempts < DISAPPEAR_THRESHOLD) {
 
@@ -489,7 +479,7 @@ static void scan_start(void)
  *
  * @param[out] p_erase_bonds  Will be true if the clear bonding button was pressed to wake the application up.
  */
-static void buttons_leds_init(bool * p_erase_bonds)
+static void buttons_leds_init()
 {
     bsp_event_t startup_event;
 
@@ -500,8 +490,6 @@ static void buttons_leds_init(bool * p_erase_bonds)
 
     err_code = bsp_btn_ble_init(NULL, &startup_event);
     APP_ERROR_CHECK(err_code);
-
-    *p_erase_bonds = (startup_event == BSP_EVENT_CLEAR_BONDING_DATA);
 }
 
 
@@ -514,52 +502,23 @@ static void log_init(void)
 }
 
 
-/** @brief Function for the Power manager.
- */
-//static void power_manage(void)
-//{
-//    uint32_t err_code = sd_app_evt_wait();
-//    APP_ERROR_CHECK(err_code);
-//}
-
-
 int main(void)
 {
-    bool		erase_bonds;
-    //uint32_t 	err_code;
-    //uint32_t	delay_init[DELAY_FIFO_LENGTH];
     int8_t		i;
 
     // Initialize.
     APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, NULL);
-    buttons_leds_init(&erase_bonds);
+    buttons_leds_init();
     log_init();
     ble_stack_init();
-    if (erase_bonds == true)
-    {
-        NRF_LOG_INFO("Bonds erased!\r\n");
-    }
 
     for (i = 0; i < DELAY_FIFO_LENGTH; i++)
     	delay[i] = 500;
-    //app_fifo_init(&delay, delay_init, DELAY_FIFO_LENGTH);
-
-//    /* 1-channel PWM, 200Hz, output on DK LED pin. */
-//    app_pwm_config_t pwm0_cfg = APP_PWM_DEFAULT_CONFIG_1CH(5000L, BSP_LED_0);
-//
-//    /* Initialize and enable PWM. */
-//	err_code = app_pwm_init(&PWM0,&pwm0_cfg,pwm_ready_callback);
-//	APP_ERROR_CHECK(err_code);
-//	app_pwm_enable(&PWM0);
+    	delay_avg[i] = 500;
 
     attempts = DISAPPEAR_THRESHOLD;
-    //total = 500 * DELAY_FIFO_LENGTH;
     turned_on = false;
-    //actual_delay = 500;
 
-    // Start scanning for peripherals and initiate connection
-    // with devices that advertise Heart Rate UUID.
-    NRF_LOG_INFO("Heart rate collector example\r\n");
     scan_start();
 
     for (;;)
@@ -570,9 +529,5 @@ int main(void)
     	} else {
     		LEDS_OFF(BSP_LED_3_MASK);
     	}
-//        if (NRF_LOG_PROCESS() == false)
-//        {
-//            power_manage();
-//        }
     }
 }
