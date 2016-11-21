@@ -39,6 +39,7 @@
 #include "nrf_log_ctrl.h"
 #include "SEGGER_RTT.h"
 #include "fstorage.h"
+#include "RFM69.h"
 
 
 #if (NRF_SD_BLE_API_VERSION == 3)
@@ -65,10 +66,11 @@
 #define DELAY_MAX					1000
 #define DELAY_MIN					50
 
-#define SPI_SS_PIN					25
-#define SPI_MISO_PIN				24
-#define SPI_MOSI_PIN				23
-#define SPI_SCK_PIN					22
+#define IS_RFM69HW					true
+#define FREQUENCY					RF69_915MHZ
+#define NODEID						1
+#define NETWORKID					100
+#define ENCRYPTKEY					"sampleEncryptKey"
 
 /**@brief Macro to unpack 16bit unsigned UUID from octet stream. */
 #define UUID16_EXTRACT(DST, SRC) \
@@ -113,13 +115,12 @@ static volatile uint32_t		delay[DELAY_FIFO_LENGTH];
 static volatile uint32_t		delay_avg[DELAY_FIFO_LENGTH];
 static volatile uint32_t		actual_delay;
 
-#define SPI_INSTANCE  0 /**< SPI instance index. */
-static const nrf_drv_spi_t spi = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);  /**< SPI instance. */
-static volatile bool spi_xfer_done;  /**< Flag used to indicate that SPI instance completed the transfer. */
+//#define SPI_INSTANCE  0 /**< SPI instance index. */
+//static const nrf_drv_spi_t spi = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);  /**< SPI instance. */
+//nrf_drv_spi_config_t spi_config = NRF_DRV_SPI_DEFAULT_CONFIG;
+//static volatile bool spi_xfer_done;  /**< Flag used to indicate that SPI instance completed the transfer. */
 #define TEST_STRING "Nordic"
-static uint8_t       m_tx_buf[] = TEST_STRING;           /**< TX buffer. */
-static uint8_t       m_rx_buf[sizeof(TEST_STRING) + 1];    /**< RX buffer. */
-static const uint8_t m_length = sizeof(m_tx_buf);        /**< Transfer length. */
+//static const uint8_t m_length = sizeof(m_tx_buf);        /**< Transfer length. */
 
 static void scan_start(void);
 
@@ -128,16 +129,14 @@ static void scan_start(void);
  * @brief SPI user event handler.
  * @param event
  */
-void spi_event_handler(nrf_drv_spi_evt_t const * p_event)
-{
-    spi_xfer_done = true;
-    NRF_LOG_INFO("Transfer completed.\r\n");
-    if (m_rx_buf[0] != 0)
-    {
-        NRF_LOG_INFO(" Received: \r\n");
-        NRF_LOG_HEXDUMP_INFO(m_rx_buf, strlen((const char *)m_rx_buf));
-    }
-}
+//void spi_event_handler(nrf_drv_spi_evt_t const * p_event)
+//{
+//    spi_xfer_done = true;
+//    if (m_rx_buf[0] != 0)
+//    {
+//        NRF_LOG_HEXDUMP_INFO(m_rx_buf, strlen((const char *)m_rx_buf));
+//    }
+//}
 
 
 /**@brief Function for asserts in the SoftDevice.
@@ -497,6 +496,29 @@ static void buttons_leds_init()
 }
 
 
+static void observer_init()
+{
+	int8_t i;
+
+	for (i = 0; i < DELAY_FIFO_LENGTH; i++) {
+		delay[i] = 500;
+		delay_avg[i] = 500;
+	}
+
+	attempts = DISAPPEAR_THRESHOLD;
+	turned_on = false;
+}
+
+
+static void dsc_init()
+{
+	RFM69(RF69_SPI_CS, RF69_IRQ_PIN, IS_RFM69HW, RF69_IRQ_NUM);
+	initialize(FREQUENCY,NODEID,NETWORKID);
+	setHighPower(IS_RFM69HW);
+	encrypt(ENCRYPTKEY);
+}
+
+
 /**@brief Function for initializing the nrf log module.
  */
 static void log_init(void)
@@ -508,28 +530,15 @@ static void log_init(void)
 
 int main(void)
 {
-    int8_t		i;
-
     // Initialize.
+
     APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, NULL);
+
     buttons_leds_init();
     log_init();
     ble_stack_init();
-
-    for (i = 0; i < DELAY_FIFO_LENGTH; i++)
-    	delay[i] = 500;
-    	delay_avg[i] = 500;
-
-    attempts = DISAPPEAR_THRESHOLD;
-    turned_on = false;
-
-    nrf_drv_spi_config_t spi_config = NRF_DRV_SPI_DEFAULT_CONFIG;
-	spi_config.ss_pin   = SPI_SS_PIN;
-	spi_config.miso_pin = SPI_MISO_PIN;
-	spi_config.mosi_pin = SPI_MOSI_PIN;
-	spi_config.sck_pin  = SPI_SCK_PIN;
-	spi_config.frequency= NRF_DRV_SPI_FREQ_500K;
-	APP_ERROR_CHECK(nrf_drv_spi_init(&spi, &spi_config, spi_event_handler));
+    observer_init();
+    dsc_init();
 
     scan_start();
 
@@ -552,7 +561,5 @@ int main(void)
 //		{
 //			__WFE();
 //		}
-//
-//		NRF_LOG_FLUSH();
     }
 }

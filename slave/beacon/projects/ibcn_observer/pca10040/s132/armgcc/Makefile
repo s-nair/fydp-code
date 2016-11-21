@@ -3,6 +3,7 @@ TARGETS          := nrf52832_xxaa
 OUTPUT_DIRECTORY := _build
 
 SDK_ROOT := ../../../../../nRF5_SDK_12.1.0_0d23e2a
+LPL_ROOT := ../../../../../LowPowerLab_SDK
 PROJ_DIR := ../../..
 
 NRFJPROG_DIR := ../../../../../nRF5x-Command-Line-Tools_9_0_0_OSX/nrfjprog
@@ -59,6 +60,8 @@ SRC_FILES += \
   $(SDK_ROOT)/components/ble/ble_services/ble_bas_c/ble_bas_c.c \
   $(SDK_ROOT)/components/ble/ble_services/ble_hrs_c/ble_hrs_c.c \
   $(SDK_ROOT)/components/softdevice/common/softdevice_handler/softdevice_handler.c \
+  $(LPL_ROOT)/RFM69/RFM69.c \
+  $(LPL_ROOT)/RFM69/RFM69support.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \
@@ -152,6 +155,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/ble/ble_services/ble_hrs \
   $(SDK_ROOT)/components/libraries/log/src \
   $(SDK_ROOT)/components/drivers_nrf/spi_master \
+  $(LPL_ROOT)/RFM69 \
 
 # Libraries common to all targets
 LIB_FILES += \

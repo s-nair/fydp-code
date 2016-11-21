@@ -41,6 +41,11 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
+			<name>RFM69</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
 			<name>nRF_BLE</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
@@ -109,6 +114,16 @@
 			<name>Device/system_nrf52.c</name>
 			<type>1</type>
 			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/toolchain/system_nrf52.c</location>
+		</link>
+		<link>
+			<name>RFM69/RFM69.c</name>
+			<type>1</type>
+			<location>/Users/sharathnair/fydp-code/slave/beacon/LowPowerLab_SDK/RFM69/RFM69.c</location>
+		</link>
+		<link>
+			<name>RFM69/RFM69support.c</name>
+			<type>1</type>
+			<location>/Users/sharathnair/fydp-code/slave/beacon/LowPowerLab_SDK/RFM69/RFM69support.c</location>
 		</link>
 		<link>
 			<name>nRF_BLE/ble_advdata.c</name>
