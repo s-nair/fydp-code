@@ -119,24 +119,10 @@ static volatile uint32_t		actual_delay;
 //static const nrf_drv_spi_t spi = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);  /**< SPI instance. */
 //nrf_drv_spi_config_t spi_config = NRF_DRV_SPI_DEFAULT_CONFIG;
 //static volatile bool spi_xfer_done;  /**< Flag used to indicate that SPI instance completed the transfer. */
-#define TEST_STRING "Nordic"
+//#define TEST_STRING "Nordic"
 //static const uint8_t m_length = sizeof(m_tx_buf);        /**< Transfer length. */
 
 static void scan_start(void);
-
-
-/**
- * @brief SPI user event handler.
- * @param event
- */
-//void spi_event_handler(nrf_drv_spi_evt_t const * p_event)
-//{
-//    spi_xfer_done = true;
-//    if (m_rx_buf[0] != 0)
-//    {
-//        NRF_LOG_HEXDUMP_INFO(m_rx_buf, strlen((const char *)m_rx_buf));
-//    }
-//}
 
 
 /**@brief Function for asserts in the SoftDevice.
@@ -550,16 +536,5 @@ int main(void)
     	} else {
     		LEDS_OFF(BSP_LED_3_MASK);
     	}
-
-//    	// Reset rx buffer and transfer done flag
-//		memset(m_rx_buf, 0, m_length);
-//		spi_xfer_done = false;
-//
-//		APP_ERROR_CHECK(nrf_drv_spi_transfer(&spi, m_tx_buf, m_length, m_rx_buf, m_length));
-//
-//		while (!spi_xfer_done)
-//		{
-//			__WFE();
-//		}
     }
 }
