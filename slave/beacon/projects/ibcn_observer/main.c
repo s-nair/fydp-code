@@ -72,6 +72,7 @@
 #define NETWORKID					100
 #define ENCRYPTKEY					"sampleEncryptKey"
 
+
 /**@brief Macro to unpack 16bit unsigned UUID from octet stream. */
 #define UUID16_EXTRACT(DST, SRC) \
     do                           \
@@ -498,7 +499,7 @@ static void observer_init()
 
 static void dsc_init()
 {
-	RFM69(RF69_SPI_CS, RF69_IRQ_PIN, IS_RFM69HW, RF69_IRQ_NUM);
+	RFM69(SPI_SS_PIN, RF69_IRQ_PIN, IS_RFM69HW, RF69_IRQ_NUM);
 	initialize(FREQUENCY,NODEID,NETWORKID);
 	setHighPower(IS_RFM69HW);
 	encrypt(ENCRYPTKEY);

@@ -11,16 +11,23 @@
 
 #define LOW			0
 #define HIGH		1
-#define FALLING		2
-#define RISING		3
-#define INPUT		4
-#define OUTPUT		5
+
+#define FALLING		0
+#define RISING		1
+
+#define INPUT		0
+#define OUTPUT		1
+
+#define SPI_INSTANCE  0 	/**< SPI instance index. */
+
+/* Other Functions */
+uint32_t current_ticks();
+uint32_t millis_diff(uint32_t ticks_now, uint32_t ticks_old);
 
 /* Arduino Library */
-uint8_t digitalRead(uint8_t pin);
-void digitalWrite(uint8_t pin, uint8_t level);
-void pinMode(uint8_t pin, uint8_t mode);
-uint32_t millis();
+uint32_t digitalRead(uint32_t pin);
+void digitalWrite(uint32_t pin, uint8_t level);
+void pinMode(uint32_t pin, uint8_t mode);
 void attachInterrupt(uint8_t irq_num, void (*f)(int), uint8_t trigger);
 void noInterrupts();
 void interrupts();
@@ -30,7 +37,7 @@ void Serial_print_hex(uint8_t val);
 void Serial_println_hex(uint8_t val);
 
 /* SPI Library */
-void SPI_begin();
+void SPI_begin(uint8_t miso_pin, uint8_t mosi_pin, uint8_t sck_pin);
 uint8_t SPI_transfer_byte(uint8_t byte);
 void SPI_transfer(uint8_t * buffer, uint8_t size);
 void SPI_setDataMode(uint32_t mode);

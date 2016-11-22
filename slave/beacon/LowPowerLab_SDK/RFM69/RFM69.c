@@ -93,14 +93,15 @@ bool initialize(uint8_t freqBand, uint8_t nodeID, uint8_t networkID)
         {255, 0}
     };
     
-    digitalWrite(_slaveSelectPin, HIGH);
     pinMode(_slaveSelectPin, OUTPUT);
-    SPI_begin();
-    unsigned long start = millis();
+    digitalWrite(_slaveSelectPin, HIGH);
+    SPI_begin(SPI_MISO_PIN, SPI_MOSI_PIN, SPI_SCK_PIN);
+    //unsigned long start = millis();
+    uint32_t start = current_ticks();
     uint8_t timeout = 50;
-    do writeReg(REG_SYNCVALUE1, 0xAA); while (readReg(REG_SYNCVALUE1) != 0xaa && millis()-start < timeout);
-    start = millis();
-    do writeReg(REG_SYNCVALUE1, 0x55); while (readReg(REG_SYNCVALUE1) != 0x55 && millis()-start < timeout);
+    do writeReg(REG_SYNCVALUE1, 0xAA); while (readReg(REG_SYNCVALUE1) != 0xaa && millis_diff(current_ticks(), start) < timeout);
+    start = current_ticks();
+    do writeReg(REG_SYNCVALUE1, 0x55); while (readReg(REG_SYNCVALUE1) != 0x55 && millis_diff(current_ticks(), start) < timeout);
     
     for (uint8_t i = 0; CONFIG[i][0] != 255; i++)
         writeReg(CONFIG[i][0], CONFIG[i][1]);
@@ -111,9 +112,9 @@ bool initialize(uint8_t freqBand, uint8_t nodeID, uint8_t networkID)
     
     setHighPower(_isRFM69HW); // called regardless if it's a RFM69W or RFM69HW
     setMode(RF69_MODE_STANDBY);
-    start = millis();
-    while (((readReg(REG_IRQFLAGS1) & RF_IRQFLAGS1_MODEREADY) == 0x00) && millis()-start < timeout); // wait for ModeReady
-    if (millis()-start >= timeout)
+    start = current_ticks();
+    while (((readReg(REG_IRQFLAGS1) & RF_IRQFLAGS1_MODEREADY) == 0x00) && millis_diff(current_ticks(), start) < timeout); // wait for ModeReady
+    if (millis_diff(current_ticks(), start) >= timeout)
         return false;
     _inISR = false;
     attachInterrupt(_interruptNum, &isr0, RISING);
@@ -225,8 +226,8 @@ bool canSend()
 void send(uint8_t toAddress, const void* buffer, uint8_t bufferSize, bool requestACK)
 {
     writeReg(REG_PACKETCONFIG2, (readReg(REG_PACKETCONFIG2) & 0xFB) | RF_PACKET2_RXRESTART); // avoid RX deadlocks
-    uint32_t now = millis();
-    while (!canSend() && millis() - now < RF69_CSMA_LIMIT_MS) receiveDone();
+    uint32_t now = current_ticks();
+    while (!canSend() && millis_diff(current_ticks(), now) < RF69_CSMA_LIMIT_MS) receiveDone();
     sendFrame(toAddress, buffer, bufferSize, requestACK, false);
 }
 
@@ -241,12 +242,12 @@ bool sendWithRetry(uint8_t toAddress, const void* buffer, uint8_t bufferSize, ui
     for (uint8_t i = 0; i <= retries; i++)
     {
         send(toAddress, buffer, bufferSize, true);
-        sentTime = millis();
-        while (millis() - sentTime < retryWaitTime)
+        sentTime = current_ticks();
+        while (millis_diff(current_ticks(), sentTime) < retryWaitTime)
         {
             if (ACKReceived(toAddress))
             {
-                //Serial.print(" ~ms:"); Serial.print(millis() - sentTime);
+                //Serial.print(" ~ms:"); Serial.print(current_ticks() - sentTime);
                 return true;
             }
         }
@@ -273,8 +274,8 @@ void sendACK(const void* buffer, uint8_t bufferSize) {
     uint8_t sender = SENDERID;
     int16_t _RSSI = RSSI; // save payload received RSSI value
     writeReg(REG_PACKETCONFIG2, (readReg(REG_PACKETCONFIG2) & 0xFB) | RF_PACKET2_RXRESTART); // avoid RX deadlocks
-    uint32_t now = millis();
-    while (!canSend() && millis() - now < RF69_CSMA_LIMIT_MS) receiveDone();
+    uint32_t now = current_ticks();
+    while (!canSend() && millis_diff(current_ticks(), now) < RF69_CSMA_LIMIT_MS) receiveDone();
     SENDERID = sender;    // TWS: Restore SenderID after it gets wiped out by receiveDone()
     sendFrame(sender, buffer, bufferSize, false, true);
     RSSI = _RSSI; // restore payload RSSI
@@ -309,8 +310,8 @@ void sendFrame(uint8_t toAddress, const void* buffer, uint8_t bufferSize, bool r
     
     // no need to wait for transmit mode to be ready since its handled by the radio
     setMode(RF69_MODE_TX);
-    uint32_t txStart = millis();
-    while (digitalRead(_interruptPin) == 0 && millis() - txStart < RF69_TX_LIMIT_MS); // wait for DIO0 to turn HIGH signalling transmission finish
+    uint32_t txStart = current_ticks();
+    while (digitalRead(_interruptPin) == 0 && millis_diff(current_ticks(), txStart) < RF69_TX_LIMIT_MS); // wait for DIO0 to turn HIGH signalling transmission finish
     //while (readReg(REG_IRQFLAGS2) & RF_IRQFLAGS2_PACKETSENT == 0x00); // wait for ModeReady
     setMode(RF69_MODE_STANDBY);
 }
@@ -455,7 +456,8 @@ void select() {
     // set RFM69 SPI settings
     SPI_setDataMode(NRF_DRV_SPI_MODE_0);
     SPI_setBitOrder(NRF_DRV_SPI_BIT_ORDER_MSB_FIRST);
-    SPI_setClockDivider(NRF_DRV_SPI_FREQ_4M); // decided to slow down from DIV2 after SPI stalling in some instances, especially visible on mega1284p when RFM69 and FLASH chip both present
+    //SPI_setClockDivider(NRF_DRV_SPI_FREQ_4M); // decided to slow down from DIV2 after SPI stalling in some instances, especially visible on mega1284p when RFM69 and FLASH chip both present
+    SPI_setClockDivider(NRF_DRV_SPI_FREQ_500K); // CHANGE THIS WHEN TESTING WITH RFM69
     digitalWrite(_slaveSelectPin, LOW);
 }
 

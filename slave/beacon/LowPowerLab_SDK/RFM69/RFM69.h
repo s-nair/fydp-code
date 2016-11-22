@@ -34,7 +34,6 @@
 #include <stdint.h>
 
 #define RF69_MAX_DATA_LEN       61 // to take advantage of the built in AES/CRC we want to limit the frame size to the internal FIFO size (66 bytes - 3 bytes overhead - 2 bytes crc)
-#define RF69_SPI_CS             25 // SS is the SPI slave select pin, for instance D10 on ATmega328
 
 // INT0 on AVRs should be connected to RFM69's DIO0 (ex on ATmega328 it's D2, on ATmega644/1284 it's D2)
 #if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega88) || defined(__AVR_ATmega8__) || defined(__AVR_ATmega88__)
@@ -78,6 +77,11 @@
 // TWS: define CTLbyte bits
 #define RFM69_CTL_SENDACK   0x80
 #define RFM69_CTL_REQACK    0x40
+
+#define SPI_SS_PIN					25
+#define SPI_MISO_PIN				24
+#define SPI_MOSI_PIN				23
+#define SPI_SCK_PIN					22
 
 static volatile uint8_t DATA[RF69_MAX_DATA_LEN]; // recv/xmit buf, including header & crc bytes
 static volatile uint8_t DATALEN;

@@ -47,10 +47,20 @@ _build/nrf52832_xxaa_RFM69support.c.o: \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_spim.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/sdk_errors.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_error.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/gpiote/nrf_drv_gpiote.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_gpiote.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_peripherals.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_gpio.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_error.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/sdk_errors.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/nordic_common.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_error_weak.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/timer/app_timer.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_util.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/device/compiler_abstraction.h \
  ../../../../../LowPowerLab_SDK/RFM69/RFM69support.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/external/segger_rtt/SEGGER_RTT.h \
- ../../../../../nRF5_SDK_12.1.0_0d23e2a/external/segger_rtt/SEGGER_RTT_Conf.h \
- ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/device/compiler_abstraction.h
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/external/segger_rtt/SEGGER_RTT_Conf.h
 
 /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/stdio.h:
 
@@ -146,10 +156,30 @@ _build/nrf52832_xxaa_RFM69support.c.o: \
 
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/softdevice/s132/headers/nrf_error.h:
 
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/gpiote/nrf_drv_gpiote.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_gpiote.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_peripherals.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_gpio.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_error.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/sdk_errors.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/nordic_common.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_error_weak.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/timer/app_timer.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_util.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/device/compiler_abstraction.h:
+
 ../../../../../LowPowerLab_SDK/RFM69/RFM69support.h:
 
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/external/segger_rtt/SEGGER_RTT.h:
 
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/external/segger_rtt/SEGGER_RTT_Conf.h:
-
-../../../../../nRF5_SDK_12.1.0_0d23e2a/components/device/compiler_abstraction.h:
