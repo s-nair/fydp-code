@@ -99,7 +99,10 @@ _build/nrf52832_xxaa_main.c.o: ../../../main.c \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/external/segger_rtt/SEGGER_RTT_Conf.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/fstorage/fstorage.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/experimental_section_vars/section_vars.h \
- ../../../../../LowPowerLab_SDK/RFM69/RFM69.h
+ ../../../../../LowPowerLab_SDK/RFM69/RFM69.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/gpiote/nrf_drv_gpiote.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_gpiote.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_peripherals.h
 
 /usr/local/gcc-arm-none-eabi-5_4-2016q3/lib/gcc/arm-none-eabi/5.4.1/include/stdint.h:
 
@@ -302,3 +305,9 @@ _build/nrf52832_xxaa_main.c.o: ../../../main.c \
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/experimental_section_vars/section_vars.h:
 
 ../../../../../LowPowerLab_SDK/RFM69/RFM69.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/gpiote/nrf_drv_gpiote.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_gpiote.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_peripherals.h:

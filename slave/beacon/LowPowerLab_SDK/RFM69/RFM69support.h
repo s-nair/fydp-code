@@ -21,16 +21,17 @@
 #define SPI_INSTANCE  0 	/**< SPI instance index. */
 
 /* Other Functions */
-uint32_t current_ticks();
+void gpio_init(void);
+uint32_t current_ticks(void);
 uint32_t millis_diff(uint32_t ticks_now, uint32_t ticks_old);
 
 /* Arduino Library */
 uint32_t digitalRead(uint32_t pin);
 void digitalWrite(uint32_t pin, uint8_t level);
 void pinMode(uint32_t pin, uint8_t mode);
-void attachInterrupt(uint8_t irq_num, void (*f)(int), uint8_t trigger);
-void noInterrupts();
-void interrupts();
+void attachInterrupt(uint32_t irq_pin, nrf_drv_gpiote_evt_handler_t func, uint8_t trigger);
+void noInterrupts(uint32_t pin);
+void interrupts(uint32_t pin);
 void Serial_print(char * str);
 void Serial_println(char * str);
 void Serial_print_hex(uint8_t val);

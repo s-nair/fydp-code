@@ -33,6 +33,13 @@
 #include "RFM69registers.h"
 #include "RFM69support.h"
 #include "nrf_drv_spi.h"
+#include "nrf_drv_gpiote.h"
+#include "app_error.h"
+
+#include "SEGGER_RTT.h"
+#include "nrf_delay.h"
+#include "boards.h"
+#include "math.h"
 //#include <SPI.h>
 //#include <Arduino.h>
 
@@ -47,6 +54,8 @@
 //volatile int16_t RSSI;          // most accurate RSSI during reception (closest to the reception)
 //volatile bool _inISR;
 //RFM69* selfPointer;
+
+static volatile uint8_t debug_flag = false;
 
 
 bool initialize(uint8_t freqBand, uint8_t nodeID, uint8_t networkID)
@@ -117,7 +126,7 @@ bool initialize(uint8_t freqBand, uint8_t nodeID, uint8_t networkID)
     if (millis_diff(current_ticks(), start) >= timeout)
         return false;
     _inISR = false;
-    attachInterrupt(_interruptNum, &isr0, RISING);
+    attachInterrupt(_interruptNum, isr0, RISING);
     
     //selfPointer = this;		/* everything static, no instances */
     _address = nodeID;
@@ -361,7 +370,7 @@ void interruptHandler() {
 }
 
 // internal function
-void isr0() { _inISR = true; interruptHandler(); _inISR = false; }
+void isr0(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action) { _inISR = true; interruptHandler(); _inISR = false; }
 
 // internal function
 void receiveBegin() {
@@ -382,7 +391,7 @@ void receiveBegin() {
 bool receiveDone() {
     //ATOMIC_BLOCK(ATOMIC_FORCEON)
     //{
-    noInterrupts(); // re-enabled in unselect() via setMode() or via receiveBegin()
+    noInterrupts(_interruptNum); // re-enabled in unselect() via setMode() or via receiveBegin()
     if (_mode == RF69_MODE_RX && PAYLOADLEN > 0)
     {
         setMode(RF69_MODE_STANDBY); // enables interrupts
@@ -390,7 +399,7 @@ bool receiveDone() {
     }
     else if (_mode == RF69_MODE_RX) // already in RX no payload yet
     {
-        interrupts(); // explicitly re-enable interrupts
+        interrupts(_interruptNum); // explicitly re-enable interrupts
         return false;
     }
     receiveBegin();
@@ -447,7 +456,7 @@ void writeReg(uint8_t addr, uint8_t value)
 
 // select the RFM69 transceiver (save SPI settings, set CS low)
 void select() {
-    noInterrupts();
+    noInterrupts(_interruptNum);
 #if defined (SPCR) && defined (SPSR)
     // save current SPI settings
     _SPCR = SPCR;
@@ -805,7 +814,105 @@ void rcCalibration()
 void maybeInterrupts()
 {
     // Only reenable interrupts if we're not being called from the ISR
-    if (!_inISR) interrupts();
+    if (!_inISR) interrupts(_interruptNum);
 }
 
 void interruptHook(uint8_t CTLbyte) {}
+
+/////////////////
+// TEST FUNCTIONS
+/////////////////
+
+void test_gpio(void) {
+	uint32_t in_pin = 25;
+	uint32_t out_pin = 17;
+	uint8_t n;
+	uint16_t i;
+
+	pinMode(in_pin, INPUT);
+	pinMode(out_pin, OUTPUT);
+
+	for (n = 0; n < 100; n++) {
+		digitalWrite(out_pin, HIGH);
+		LEDS_INVERT(BSP_LED_3_MASK);
+		for (i = 0; i < 50; i++) {
+			char tmp[500];
+			sprintf(tmp, "%u", (unsigned int)digitalRead(in_pin));
+			SEGGER_RTT_WriteString(0, tmp);
+			nrf_delay_us(100000);
+		}
+		digitalWrite(out_pin, LOW);
+		LEDS_INVERT(BSP_LED_3_MASK);
+		for (i = 0; i < 50; i++) {
+			char tmp[500];
+			sprintf(tmp, "%u", (unsigned int)digitalRead(in_pin));
+			SEGGER_RTT_WriteString(0, tmp);
+			nrf_delay_us(100000);
+		}
+	}
+}
+
+void test_interrupts(void) {
+	uint32_t int_pin = RF69_IRQ_PIN;
+	uint32_t out_pin = 27;
+
+	gpio_init();
+
+	pinMode(out_pin, OUTPUT);
+	digitalWrite(out_pin, LOW);
+
+	attachInterrupt(int_pin, in_pin_handler, RISING);
+
+	SEGGER_RTT_WriteString(0, "Interrupt Attached.\r\n");
+
+	poke_int(out_pin);
+
+	noInterrupts(int_pin);
+	SEGGER_RTT_WriteString(0, "Interrupt Disabled.\r\n");
+
+	poke_int(out_pin);
+
+	interrupts(int_pin);
+	SEGGER_RTT_WriteString(0, "Interrupt Re-enabled.\r\n");
+
+	poke_int(out_pin);
+}
+
+void test_millis(void) {
+	uint8_t period = 1000;
+	uint32_t prev_tick;
+	uint32_t curr_tick;
+
+	prev_tick = current_ticks();
+
+	while(true) {
+		curr_tick = current_ticks();
+		if (millis_diff(curr_tick, prev_tick) >= period) {
+			LEDS_INVERT(BSP_LED_3_MASK);
+			prev_tick = current_ticks();
+		}
+	}
+}
+
+void in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
+	//SEGGER_RTT_WriteString(0, "Interrupt Called!\r\n");
+	debug_flag = true;
+}
+
+void poke_int(uint32_t out_pin) {
+	uint8_t i;
+
+	for (i = 0; i < 5; i++) {
+		nrf_delay_us((uint32_t)pow(10, 6));
+		digitalWrite(out_pin, HIGH);
+		LEDS_INVERT(BSP_LED_3_MASK);
+		nrf_delay_us((uint32_t)pow(10, 6));
+		digitalWrite(out_pin, LOW);
+		LEDS_INVERT(BSP_LED_3_MASK);
+		if (debug_flag) {
+			SEGGER_RTT_WriteString(0, "Interrupt Called!\r\n");
+			debug_flag = false;
+			return;
+		}
+	}
+}

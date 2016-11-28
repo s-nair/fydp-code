@@ -66,7 +66,7 @@
 #define DELAY_MAX					1000
 #define DELAY_MIN					50
 
-#define IS_RFM69HW					true
+#define IS_RFM69HW					1
 #define FREQUENCY					RF69_915MHZ
 #define NODEID						1
 #define NETWORKID					100
@@ -525,17 +525,22 @@ int main(void)
     log_init();
     ble_stack_init();
     observer_init();
-    dsc_init();
+    //dsc_init();
 
-    scan_start();
+    //scan_start();
+
+    // TEST GPIO
+    //test_gpio();
+    //test_interrupts();
+    test_millis();
 
     for (;;)
     {
-    	if (turned_on) {
-			LEDS_INVERT(BSP_LED_3_MASK);
-			nrf_delay_ms(actual_delay);
-    	} else {
-    		LEDS_OFF(BSP_LED_3_MASK);
-    	}
+//    	if (turned_on) {
+//			LEDS_INVERT(BSP_LED_3_MASK);
+//			nrf_delay_ms(actual_delay);
+//    	} else {
+//    		LEDS_OFF(BSP_LED_3_MASK);
+//    	}
     }
 }

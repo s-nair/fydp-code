@@ -12,6 +12,7 @@
 #include "nrf_drv_gpiote.h"
 #include "app_error.h"
 #include "app_timer.h"
+#include "RFM69.h"
 #include "RFM69support.h"
 #include "SEGGER_RTT.h"
 
@@ -20,11 +21,14 @@ nrf_drv_spi_config_t 			spi_config 			= NRF_DRV_SPI_DEFAULT_CONFIG;
 static volatile bool 			spi_xfer_done;  											/**< Flag used to indicate that SPI instance completed the transfer. */
 static uint8_t       			m_rx_buf[1];    											/**< RX buffer. */
 
-nrf_gpio_pin_pull_t				pull_config;
-
 
 void spi_event_handler(nrf_drv_spi_evt_t const * p_event) {
     spi_xfer_done = true;
+}
+
+void gpio_init(void) {
+	if (!nrf_drv_gpiote_is_init())
+		APP_ERROR_CHECK(nrf_drv_gpiote_init());
 }
 
 
@@ -56,7 +60,7 @@ void pinMode(uint32_t pin, uint8_t mode) {
 	}
 }
 
-uint32_t current_ticks() {
+uint32_t current_ticks(void) {
 	return app_timer_cnt_get();
 }
 
@@ -67,16 +71,39 @@ uint32_t millis_diff(uint32_t ticks_now, uint32_t ticks_old) {
 	return p_ticks_diff * 1000 / 32768;
 }
 
-void attachInterrupt(uint8_t irq_num, void (*f)(int), uint8_t trigger) {
+void attachInterrupt(uint32_t irq_pin, nrf_drv_gpiote_evt_handler_t func, uint8_t trigger) {
+	nrf_drv_gpiote_in_config_t in_config;
 
+	switch(trigger) {
+	case RISING:
+		in_config.is_watcher = false;
+		in_config.hi_accuracy = true;
+		in_config.pull = NRF_GPIO_PIN_NOPULL;
+		in_config.sense = NRF_GPIOTE_POLARITY_LOTOHI;
+		break;
+	case FALLING:
+		in_config.is_watcher = false;
+		in_config.hi_accuracy = true;
+		in_config.pull = NRF_GPIO_PIN_NOPULL;
+		in_config.sense = NRF_GPIOTE_POLARITY_HITOLO;
+	}
+
+//	NVIC_EnableIRQ(GPIOTE_IRQn);
+//	NVIC_SetPriority(GPIOTE_IRQn, GPIOTE_CONFIG_IRQ_PRIORITY);
+
+	APP_ERROR_CHECK(nrf_drv_gpiote_in_init(irq_pin, &in_config, func));
+
+	nrf_drv_gpiote_in_event_enable(irq_pin, true);
 }
 
-void noInterrupts() {
-
+void noInterrupts(uint32_t pin) {
+	//nrf_gpio_cfg_sense_set(pin, NRF_GPIO_PIN_NOSENSE);
+	nrf_drv_gpiote_in_event_disable(pin);
 }
 
-void interrupts() {
-
+void interrupts(uint32_t pin) {
+	//nrf_gpio_cfg_sense_set(pin, NRF_GPIO_PIN_SENSE_HIGH);
+	nrf_drv_gpiote_in_event_enable(pin, true);
 }
 
 void Serial_print(char *str) {

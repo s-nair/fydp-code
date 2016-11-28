@@ -58,6 +58,7 @@ _build/nrf52832_xxaa_RFM69support.c.o: \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/timer/app_timer.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_util.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/device/compiler_abstraction.h \
+ ../../../../../LowPowerLab_SDK/RFM69/RFM69.h \
  ../../../../../LowPowerLab_SDK/RFM69/RFM69support.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/external/segger_rtt/SEGGER_RTT.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/external/segger_rtt/SEGGER_RTT_Conf.h
@@ -177,6 +178,8 @@ _build/nrf52832_xxaa_RFM69support.c.o: \
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/app_util.h:
 
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/device/compiler_abstraction.h:
+
+../../../../../LowPowerLab_SDK/RFM69/RFM69.h:
 
 ../../../../../LowPowerLab_SDK/RFM69/RFM69support.h:
 

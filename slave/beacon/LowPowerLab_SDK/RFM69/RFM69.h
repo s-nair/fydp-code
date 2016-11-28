@@ -32,6 +32,7 @@
 #define RFM69_h
 
 #include <stdint.h>
+#include "nrf_drv_gpiote.h"
 
 #define RF69_MAX_DATA_LEN       61 // to take advantage of the built in AES/CRC we want to limit the frame size to the internal FIFO size (66 bytes - 3 bytes overhead - 2 bytes crc)
 
@@ -46,8 +47,8 @@
 #define RF69_IRQ_PIN          3
 #define RF69_IRQ_NUM          0
 #elif defined(__arm__)//Use pin 10 or any pin you want
-#define RF69_IRQ_PIN          10
-#define RF69_IRQ_NUM          10
+#define RF69_IRQ_PIN          26
+#define RF69_IRQ_NUM          26
 #else
 #define RF69_IRQ_PIN          2
 #define RF69_IRQ_NUM          0
@@ -173,7 +174,7 @@ uint8_t readReg(uint8_t addr);
 void writeReg(uint8_t addr, uint8_t val);
 void readAllRegs();
     
-static void isr0();
+static void isr0(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
 //void virtual interruptHandler();
 void interruptHandler();
 //virtual void interruptHook(uint8_t CTLbyte) {};
@@ -183,7 +184,7 @@ static volatile bool _inISR;
 void sendFrame(uint8_t toAddress, const void* buffer, uint8_t size, bool requestACK, bool sendACK);
 
 //static RFM69* selfPointer;
-uint8_t _slaveSelectPin;
+uint32_t _slaveSelectPin;
 uint8_t _interruptPin;
 uint8_t _interruptNum;
 uint8_t _address;
@@ -202,5 +203,11 @@ void select();
 void unselect();
 //inline void maybeInterrupts();
 void maybeInterrupts();
+
+void test_gpio(void);
+void test_interrupts(void);
+void test_millis(void);
+void in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+void poke_int(uint32_t out_pin);
 
 #endif
