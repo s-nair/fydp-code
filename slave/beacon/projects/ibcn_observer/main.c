@@ -124,7 +124,7 @@ static volatile uint32_t		actual_delay;
 //static const uint8_t m_length = sizeof(m_tx_buf);        /**< Transfer length. */
 
 static void scan_start(void);
-
+static void dummy_handler(void * p_context);
 
 /**@brief Function for asserts in the SoftDevice.
  *
@@ -140,6 +140,12 @@ static void scan_start(void);
 void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
 {
     app_error_handler(0xDEADBEEF, line_num, p_file_name);
+}
+
+
+// repeated timer handler for running RTC1
+static void dummy_handler(void * p_context) {
+	SEGGER_RTT_WriteString(0, "dummy handler\r\n");
 }
 
 
@@ -278,9 +284,12 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             	total_current = 0;
             	total_avg = 0;
 
+            	// run RSSI and transmit power data through distance algorithm to get distance
             	distance = calculateAccuracy(ibcn_data.tx_pwr, rssi);
+            	// scale distance to get a reasonable delay-between-flashes
             	current_delay = min(DELAY_MAX, DELAY_MIN + (uint32_t)(distance * DELAY_MAX - DELAY_MIN));
 
+            	// FIFO push/pop while calculating first-order and second-order sums
             	for (i = 0; i < DELAY_FIFO_LENGTH - 1; i++) {
             		delay[i] = delay[i + 1];
             		delay_avg[i] = delay_avg[i + 1];
@@ -288,14 +297,18 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             		total_avg += delay_avg[i];
             	}
 
+            	// FIFO push and add to first-order total
             	delay[DELAY_FIFO_LENGTH - 1] = current_delay;
             	total_current += current_delay;
 
+            	// first-order average
             	tmp = total_current / DELAY_FIFO_LENGTH;
 
+            	// FIFO push and add to second-order total
             	delay_avg[DELAY_FIFO_LENGTH - 1] = tmp;
             	total_avg += tmp;
 
+            	// delay set to second-order average (average-of-averages)
             	actual_delay = total_avg / DELAY_FIFO_LENGTH;
 
             } else if (attempts < DISAPPEAR_THRESHOLD) {
@@ -500,7 +513,11 @@ static void observer_init()
 static void dsc_init()
 {
 	RFM69(SPI_SS_PIN, RF69_IRQ_PIN, IS_RFM69HW, RF69_IRQ_NUM);
-	initialize(FREQUENCY,NODEID,NETWORKID);
+	if (initialize(FREQUENCY,NODEID,NETWORKID))
+		SEGGER_RTT_WriteString(0, "Initialize Succeeded!\r\n\n");
+	else
+		SEGGER_RTT_WriteString(0, "Initialize Failed!\r\n\n");
+//	initialize(FREQUENCY,NODEID,NETWORKID);
 	setHighPower(IS_RFM69HW);
 	encrypt(ENCRYPTKEY);
 }
@@ -515,32 +532,43 @@ static void log_init(void)
 }
 
 
+static void timer_init() {
+	APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, NULL);
+	APP_TIMER_DEF(dummy_timer_id);
+	app_timer_create(&dummy_timer_id, APP_TIMER_MODE_REPEATED, dummy_handler);
+	app_timer_start(dummy_timer_id, 0xFFFFFFFF, NULL);
+}
+
+
 int main(void)
 {
     // Initialize.
 
-    APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, NULL);
-
+    timer_init();
     buttons_leds_init();
     log_init();
     ble_stack_init();
     observer_init();
-    //dsc_init();
+    dsc_init();
 
-    //scan_start();
+    scan_start();
 
     // TEST GPIO
     //test_gpio();
     //test_interrupts();
-    test_millis();
+    //test_millis();
+
+    readAllRegs();
 
     for (;;)
     {
-//    	if (turned_on) {
-//			LEDS_INVERT(BSP_LED_3_MASK);
-//			nrf_delay_ms(actual_delay);
-//    	} else {
-//    		LEDS_OFF(BSP_LED_3_MASK);
-//    	}
+    	if (turned_on) {
+			LEDS_INVERT(BSP_LED_3_MASK);
+			nrf_delay_ms(actual_delay);
+    	} else {
+    		LEDS_OFF(BSP_LED_3_MASK);
+    	}
     }
 }
+
+

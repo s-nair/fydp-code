@@ -978,7 +978,7 @@
 // <e> RTC_ENABLED - nrf_drv_rtc - RTC peripheral driver
 //==========================================================
 #ifndef RTC_ENABLED
-#define RTC_ENABLED 0
+#define RTC_ENABLED 1
 #endif
 #if  RTC_ENABLED
 // <o> RTC_DEFAULT_CONFIG_FREQUENCY - Frequency  <16-32768> 
@@ -1779,7 +1779,7 @@
 // <i> This option can be used when app_timer is used for timestamping.
 
 #ifndef APP_TIMER_KEEPS_RTC_ACTIVE
-#define APP_TIMER_KEEPS_RTC_ACTIVE 0
+#define APP_TIMER_KEEPS_RTC_ACTIVE 1
 #endif
 
 #endif //APP_TIMER_ENABLED

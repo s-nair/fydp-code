@@ -153,6 +153,8 @@ void SPI_begin(uint8_t miso_pin, uint8_t mosi_pin, uint8_t sck_pin) {
 	spi_config.mosi_pin  = mosi_pin;
 	spi_config.sck_pin   = sck_pin;
 	spi_config.frequency = NRF_DRV_SPI_FREQ_500K;
+
+	APP_ERROR_CHECK(nrf_drv_spi_init(&spi, &spi_config, spi_event_handler));
 }
 
 // this is mainly used for SPI transfer

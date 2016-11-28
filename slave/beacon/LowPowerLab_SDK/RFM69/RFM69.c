@@ -465,8 +465,8 @@ void select() {
     // set RFM69 SPI settings
     SPI_setDataMode(NRF_DRV_SPI_MODE_0);
     SPI_setBitOrder(NRF_DRV_SPI_BIT_ORDER_MSB_FIRST);
-    //SPI_setClockDivider(NRF_DRV_SPI_FREQ_4M); // decided to slow down from DIV2 after SPI stalling in some instances, especially visible on mega1284p when RFM69 and FLASH chip both present
-    SPI_setClockDivider(NRF_DRV_SPI_FREQ_500K); // CHANGE THIS WHEN TESTING WITH RFM69
+    SPI_setClockDivider(NRF_DRV_SPI_FREQ_4M); // decided to slow down from DIV2 after SPI stalling in some instances, especially visible on mega1284p when RFM69 and FLASH chip both present
+    //SPI_setClockDivider(NRF_DRV_SPI_FREQ_500K); // CHANGE THIS WHEN TESTING WITH RFM69
     digitalWrite(_slaveSelectPin, LOW);
 }
 
@@ -540,7 +540,9 @@ void readAllRegs()
     long freqCenter = 0;
 #endif
     
-    Serial_println("Address - HEX - BIN");
+//    Serial_print("Address - HEX - BIN");
+    Serial_print("Address - HEX");
+    Serial_print("\r\n");
     for (uint8_t regAddr = 1; regAddr <= 0x4F; regAddr++)
     {
         select();
@@ -557,6 +559,7 @@ void readAllRegs()
         Serial_print_hex(regAddr);
         Serial_print(" - ");
         Serial_print_hex(regVal);
+        Serial_print("\r\n");
         
 #if REGISTER_DETAIL
         switch ( regAddr )
@@ -824,8 +827,8 @@ void interruptHook(uint8_t CTLbyte) {}
 /////////////////
 
 void test_gpio(void) {
-	uint32_t in_pin = 25;
-	uint32_t out_pin = 17;
+	uint32_t in_pin = 26;
+	uint32_t out_pin = 27;
 	uint8_t n;
 	uint16_t i;
 
@@ -879,7 +882,7 @@ void test_interrupts(void) {
 }
 
 void test_millis(void) {
-	uint8_t period = 1000;
+	uint32_t period = 1000;
 	uint32_t prev_tick;
 	uint32_t curr_tick;
 
@@ -903,12 +906,15 @@ void poke_int(uint32_t out_pin) {
 	uint8_t i;
 
 	for (i = 0; i < 5; i++) {
+
 		nrf_delay_us((uint32_t)pow(10, 6));
 		digitalWrite(out_pin, HIGH);
 		LEDS_INVERT(BSP_LED_3_MASK);
+
 		nrf_delay_us((uint32_t)pow(10, 6));
 		digitalWrite(out_pin, LOW);
 		LEDS_INVERT(BSP_LED_3_MASK);
+
 		if (debug_flag) {
 			SEGGER_RTT_WriteString(0, "Interrupt Called!\r\n");
 			debug_flag = false;
