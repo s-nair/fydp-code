@@ -553,7 +553,7 @@ int main(void)
 
     scan_start();
 
-    // TEST GPIO
+    // TEST
     //test_gpio();
     //test_interrupts();
     //test_millis();
