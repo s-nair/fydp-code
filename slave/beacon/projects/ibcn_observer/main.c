@@ -35,6 +35,8 @@
 #include "nrf_gpio.h"
 #include "nrf_drv_spi.h"
 #include "nrf_delay.h"
+#include "nrf_drv_pwm.h"
+#include "nrf_drv_clock.h"
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "SEGGER_RTT.h"
@@ -68,9 +70,14 @@
 
 #define IS_RFM69HW					1
 #define FREQUENCY					RF69_915MHZ
-#define NODEID						1
+#define NODEID						2
 #define NETWORKID					100
 #define ENCRYPTKEY					"sampleEncryptKey"
+
+#define RECEIVER					1
+
+#define APP_TIMER_PRESCALER     0
+#define APP_TIMER_OP_QUEUE_SIZE 2
 
 
 /**@brief Macro to unpack 16bit unsigned UUID from octet stream. */
@@ -107,6 +114,9 @@ typedef struct
     int8_t    tx_pwr;
 } ibcn_data_t;
 
+
+static nrf_drv_pwm_t m_pwm0 = NRF_DRV_PWM_INSTANCE(0);
+
 static bool               		m_memory_access_in_progress;  	/**< Flag to keep track of ongoing operations on persistent memory. */
 static ble_gap_scan_params_t 	m_scan_param;   				/** @brief Scan parameters requested for scanning and connection. */
 
@@ -115,6 +125,8 @@ static volatile bool			turned_on;
 static volatile uint32_t		delay[DELAY_FIFO_LENGTH];
 static volatile uint32_t		delay_avg[DELAY_FIFO_LENGTH];
 static volatile uint32_t		actual_delay;
+
+int16_t packetnum = 0;  // packet counter, we increment per xmission
 
 //#define SPI_INSTANCE  0 /**< SPI instance index. */
 //static const nrf_drv_spi_t spi = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);  /**< SPI instance. */
@@ -513,13 +525,15 @@ static void observer_init()
 static void dsc_init()
 {
 	RFM69(SPI_SS_PIN, RF69_IRQ_PIN, IS_RFM69HW, RF69_IRQ_NUM);
+
 	if (initialize(FREQUENCY,NODEID,NETWORKID))
 		SEGGER_RTT_WriteString(0, "Initialize Succeeded!\r\n\n");
 	else
 		SEGGER_RTT_WriteString(0, "Initialize Failed!\r\n\n");
-//	initialize(FREQUENCY,NODEID,NETWORKID);
+
 	setHighPower(IS_RFM69HW);
-	encrypt(ENCRYPTKEY);
+
+	//encrypt(ENCRYPTKEY);
 }
 
 
@@ -562,12 +576,109 @@ int main(void)
 
     for (;;)
     {
-    	if (turned_on) {
-			LEDS_INVERT(BSP_LED_3_MASK);
-			nrf_delay_ms(actual_delay);
-    	} else {
-    		LEDS_OFF(BSP_LED_3_MASK);
-    	}
+    	// TESTING PROXIMITY
+
+//    	if (turned_on) {
+//			LEDS_INVERT(BSP_LED_3_MASK);
+//			nrf_delay_ms(actual_delay);
+//    	} else {
+//    		LEDS_OFF(BSP_LED_3_MASK);
+//    	}
+
+    	//TESTING DSC RECEIVER
+
+//    	//check if something was received (could be an interrupt from the radio)
+//		if (receiveDone()) {
+//		//print message received to serial
+////			Serial.print('[');Serial.print(SENDERID);Serial.print("] ");
+////			Serial.print((char*)DATA);
+////			Serial.print("   [RX_RSSI:");Serial.print(RSSI);Serial.print("]");
+//
+//			SEGGER_RTT_WriteString(0, "Message Received");
+//			SEGGER_RTT_WriteString(0, (char*)DATA);
+//			SEGGER_RTT_WriteString(0, "\r\n");
+//
+//			//check if received message contains ON
+//			if (strstr((char *)DATA, "ON")) {
+//				LEDS_ON(BSP_LED_3_MASK);
+//				//check if sender wanted an ACK
+//				if (ACKRequested()) {
+//					sendACK("", 0);
+////					Serial.println(" - ACK sent");
+//					SEGGER_RTT_WriteString(0, " - ACK sent\r\n");
+//				}
+////				Blink(LED, 40, 3); //blink LED 3 times, 40ms between blinks
+//			//check if received message contains OFF
+//			} else if (strstr((char *)DATA, "OFF")) {
+//				LEDS_OFF(BSP_LED_3_MASK);
+//				//check if sender wanted an ACK
+//				if (ACKRequested()) {
+//					sendACK("", 0);
+////					Serial.println(" - ACK sent");
+//					SEGGER_RTT_WriteString(0, " - ACK sent\r\n");
+//				}
+////				Blink(LED, 40, 3); //blink LED 3 times, 40ms between blinks
+//			}
+//		}
+//
+//		receiveDone(); //put radio in RX mode
+
+    	// TESTING DSC TRANSMITTER
+
+//    	nrf_delay_us(1000000);  // Wait 1 second between transmits, could also 'sleep' here!
+//
+//		char radiopacket[20] = "Hello World #";
+//		itoa(packetnum++, radiopacket+13, 10);
+////		Serial.print("Sending "); Serial.println(radiopacket);
+//		SEGGER_RTT_WriteString(0, "Sending "); SEGGER_RTT_WriteString(0, radiopacket);
+//
+//		if (sendWithRetry(RECEIVER, radiopacket, strlen(radiopacket), 2, 40)) { //target node Id, message as string or byte array, message length
+//			SEGGER_RTT_WriteString(0, "OK");
+////			Blink(LED, 50, 3); //blink LED 3 times, 50ms between blinks
+//		}
+//
+//		receiveDone(); //put radio in RX mode
+//		//Serial.flush(); //make sure all serial data is clocked out before sleeping the MCU
+
+		uint32_t err_code;
+
+		nrf_drv_pwm_config_t const config0 =
+		{
+			.output_pins =
+			{
+				20, 		  						  // channel 0
+				NRF_DRV_PWM_PIN_NOT_USED,             // channel 1
+				NRF_DRV_PWM_PIN_NOT_USED,             // channel 2
+				NRF_DRV_PWM_PIN_NOT_USED,             // channel 3
+			},
+			.irq_priority = APP_IRQ_PRIORITY_LOW,
+			.base_clock   = NRF_PWM_CLK_1MHz,
+			.count_mode   = NRF_PWM_MODE_UP,
+			.top_value    = 250,
+			.load_mode    = NRF_PWM_LOAD_COMMON,
+			.step_mode    = NRF_PWM_STEP_AUTO
+		};
+
+		err_code = nrf_drv_pwm_init(&m_pwm0, &config0, NULL);
+		if (err_code != NRF_SUCCESS)
+		{
+			// Initialization failed. Take recovery action.
+		}
+
+		static nrf_pwm_values_common_t seq_values[] =
+		{
+			125
+		};
+
+		nrf_pwm_sequence_t const seq =
+		{
+			.values.p_common = seq_values,
+			.length          = NRF_PWM_VALUES_LENGTH(seq_values),
+			.repeats         = 0,
+			.end_delay       = 0
+		};
+
+		nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, NRF_DRV_PWM_FLAG_LOOP);
     }
 }
 

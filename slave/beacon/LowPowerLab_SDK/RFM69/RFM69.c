@@ -102,6 +102,11 @@ bool initialize(uint8_t freqBand, uint8_t nodeID, uint8_t networkID)
         {255, 0}
     };
     
+    // gpiote (interrupts)
+    gpio_init();
+    // hard reset moved into initialization
+    pinMode(RF69_RST_PIN, OUTPUT);
+    hard_reset();
     pinMode(_slaveSelectPin, OUTPUT);
     digitalWrite(_slaveSelectPin, HIGH);
     SPI_begin(SPI_MISO_PIN, SPI_MOSI_PIN, SPI_SCK_PIN);
@@ -821,6 +826,13 @@ void maybeInterrupts()
 }
 
 void interruptHook(uint8_t CTLbyte) {}
+
+void hard_reset(void) {
+	digitalWrite(RF69_RST_PIN, HIGH);
+	nrf_delay_us(100000);
+	digitalWrite(RF69_RST_PIN, LOW);
+	nrf_delay_us(100000);
+}
 
 /////////////////
 // TEST FUNCTIONS

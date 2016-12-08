@@ -246,7 +246,7 @@ static void pwm_dealloc(app_pwm_t const * const p_instance)
     {
         nrf_drv_ppi_group_free(p_cb->ppi_group);
     }
-#elif NRF52
+#elseif NRF52
     nrf_drv_ppi_channel_free(p_cb->ppi_channel);
 #endif //NRF52
     for (uint8_t ch = 0; ch < APP_PWM_CHANNELS_PER_INSTANCE; ++ch)

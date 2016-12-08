@@ -49,6 +49,7 @@
 #elif defined(__arm__)//Use pin 10 or any pin you want
 #define RF69_IRQ_PIN          26
 #define RF69_IRQ_NUM          26
+#define RF69_RST_PIN		  27
 #else
 #define RF69_IRQ_PIN          2
 #define RF69_IRQ_NUM          0
@@ -203,6 +204,8 @@ void select();
 void unselect();
 //inline void maybeInterrupts();
 void maybeInterrupts();
+
+void hard_reset(void);
 
 void test_gpio(void);
 void test_interrupts(void);

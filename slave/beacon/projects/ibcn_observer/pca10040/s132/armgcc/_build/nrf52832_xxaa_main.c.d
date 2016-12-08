@@ -90,6 +90,12 @@ _build/nrf52832_xxaa_main.c.o: ../../../main.c \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_spim.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/sdk_errors.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/delay/nrf_delay.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/pwm/nrf_drv_pwm.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_pwm.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/nrf_assert.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/clock/nrf_drv_clock.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_clock.h \
+ ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/common/nrf_drv_common.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/log/nrf_log.h \
  ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/log/src/nrf_log_internal.h \
  /usr/local/gcc-arm-none-eabi-5_4-2016q3/arm-none-eabi/include/inttypes.h \
@@ -285,6 +291,18 @@ _build/nrf52832_xxaa_main.c.o: ../../../main.c \
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/sdk_errors.h:
 
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/delay/nrf_delay.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/pwm/nrf_drv_pwm.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_pwm.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/util/nrf_assert.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/clock/nrf_drv_clock.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/hal/nrf_clock.h:
+
+../../../../../nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/common/nrf_drv_common.h:
 
 ../../../../../nRF5_SDK_12.1.0_0d23e2a/components/libraries/log/nrf_log.h:
 

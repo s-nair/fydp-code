@@ -241,6 +241,11 @@
 			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/gpiote/nrf_drv_gpiote.c</location>
 		</link>
 		<link>
+			<name>nRF_Drivers/nrf_drv_ppi.c</name>
+			<type>1</type>
+			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/ppi/nrf_drv_ppi.c</location>
+		</link>
+		<link>
 			<name>nRF_Drivers/nrf_drv_pwm.c</name>
 			<type>1</type>
 			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/pwm/nrf_drv_pwm.c</location>
@@ -249,6 +254,11 @@
 			<name>nRF_Drivers/nrf_drv_spi.c</name>
 			<type>1</type>
 			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/spi_master/nrf_drv_spi.c</location>
+		</link>
+		<link>
+			<name>nRF_Drivers/nrf_drv_timer.c</name>
+			<type>1</type>
+			<location>/Users/sharathnair/fydp-code/slave/beacon/nRF5_SDK_12.1.0_0d23e2a/components/drivers_nrf/timer/nrf_drv_timer.c</location>
 		</link>
 		<link>
 			<name>nRF_Drivers/nrf_drv_uart.c</name>
