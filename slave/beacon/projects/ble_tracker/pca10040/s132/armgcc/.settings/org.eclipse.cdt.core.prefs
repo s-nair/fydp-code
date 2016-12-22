@@ -1,0 +1,11 @@
+eclipse.preferences.version=1
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1255598625/PATH/delimiter=\:
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1255598625/PATH/operation=replace
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1255598625/PATH/value=/usr/bin\:/usr/local/gcc-arm-none-eabi-5_4-2016q3/bin\:/bin\:/usr/sbin\:/sbin
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1255598625/append=true
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1255598625/appendContributed=true
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.537304221/PATH/delimiter=\:
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.537304221/PATH/operation=replace
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.537304221/PATH/value=/usr/bin\:/usr/local/gcc-arm-none-eabi-5_4-2016q3/bin\:/bin\:/usr/sbin\:/sbin
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.537304221/append=true
+environment/project/ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.537304221/appendContributed=true

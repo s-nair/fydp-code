@@ -37,12 +37,13 @@
 #include "nrf_delay.h"
 #include "nrf_drv_pwm.h"
 #include "nrf_drv_clock.h"
+#include "nrf_clock.h"
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "SEGGER_RTT.h"
 #include "fstorage.h"
 #include "RFM69.h"
-
+#include "RFM69support.h"
 
 #if (NRF_SD_BLE_API_VERSION == 3)
 	#define NRF_BLE_MAX_MTU_SIZE        GATT_MTU_SIZE_DEFAULT               /**< MTU size used in the softdevice enabling and to reply to a BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST event. */
@@ -54,7 +55,7 @@
 #define APP_TIMER_PRESCALER         0                                   /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE     2                                   /**< Size of timer operation queues. */
 
-#define SCAN_INTERVAL               0x0050                              /**< Determines scan interval in units of 0.625 millisecond. */
+#define SCAN_INTERVAL               0x00A0                              /**< Determines scan interval in units of 0.625 millisecond. */
 #define SCAN_WINDOW                 0x004F                              /**< Determines scan window in units of 0.625 millisecond. */
 
 #define IBEACON_HEADER				0x1AFF4C000215
@@ -76,8 +77,10 @@
 
 #define RECEIVER					1
 
-#define APP_TIMER_PRESCALER     0
-#define APP_TIMER_OP_QUEUE_SIZE 2
+#define APP_TIMER_PRESCALER     	0
+#define APP_TIMER_OP_QUEUE_SIZE 	2
+
+#define BUZZER_PIN					3
 
 
 /**@brief Macro to unpack 16bit unsigned UUID from octet stream. */
@@ -156,9 +159,7 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
 
 
 // repeated timer handler for running RTC1
-static void dummy_handler(void * p_context) {
-	SEGGER_RTT_WriteString(0, "dummy handler\r\n");
-}
+static void dummy_handler(void * p_context) {}
 
 
 /**
@@ -422,10 +423,15 @@ static void ble_stack_init(void)
 
     // Enable BLE stack.
 #if (NRF_SD_BLE_API_VERSION == 3)
+    //UNTESTED
     ble_enable_params.gatt_enable_params.att_mtu = NRF_BLE_MAX_MTU_SIZE;
 #endif
     err_code = softdevice_enable(&ble_enable_params);
     APP_ERROR_CHECK(err_code);
+
+    //UNTESTED
+//    err_code = sd_power_dcdc_mode_set(NRF_POWER_DCDC_ENABLE);
+//    APP_ERROR_CHECK(err_code);
 
     // Register with the SoftDevice handler module for BLE events.
     err_code = softdevice_ble_evt_handler_set(ble_evt_dispatch);
@@ -558,21 +564,77 @@ int main(void)
 {
     // Initialize.
 
+//	// Set the external high frequency clock source to 32 MHz
+//	NRF_CLOCK->XTALFREQ = 0xFFFFFF00;
+//
+//	// Start the external high frequency crystal
+//	NRF_CLOCK->EVENTS_HFCLKSTARTED = 0;
+//	NRF_CLOCK->TASKS_HFCLKSTART = 1;
+//
+//	// Wait for the external oscillator to start up
+//	while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0) {}
+
     timer_init();
     buttons_leds_init();
     log_init();
-    ble_stack_init();
-    observer_init();
-    dsc_init();
-
-    scan_start();
+//    ble_stack_init();
+//    observer_init();
+//    dsc_init();
+//
+//    scan_start();
 
     // TEST
     //test_gpio();
     //test_interrupts();
     //test_millis();
 
-    readAllRegs();
+    //readAllRegs();
+
+    uint32_t err_code;
+
+    //TEST
+    LEDS_ON(BSP_LED_1_MASK);
+    pinMode(14, OUTPUT);
+    digitalWrite(14, 1);
+
+
+	nrf_drv_pwm_config_t const config0 =
+	{
+		.output_pins =
+		{
+			BUZZER_PIN, 		  				  // channel 0
+			NRF_DRV_PWM_PIN_NOT_USED,             // channel 1
+			NRF_DRV_PWM_PIN_NOT_USED,             // channel 2
+			NRF_DRV_PWM_PIN_NOT_USED,             // channel 3
+		},
+		.irq_priority = APP_IRQ_PRIORITY_LOW,
+		.base_clock   = NRF_PWM_CLK_1MHz,
+		.count_mode   = NRF_PWM_MODE_UP,
+		.top_value    = 250,
+		.load_mode    = NRF_PWM_LOAD_COMMON,
+		.step_mode    = NRF_PWM_STEP_AUTO
+	};
+
+	err_code = nrf_drv_pwm_init(&m_pwm0, &config0, NULL);
+	if (err_code != NRF_SUCCESS)
+	{
+		// Initialization failed. Take recovery action.
+	}
+
+	static nrf_pwm_values_common_t seq_values[] =
+	{
+		125
+	};
+
+	nrf_pwm_sequence_t const seq =
+	{
+		.values.p_common = seq_values,
+		.length          = NRF_PWM_VALUES_LENGTH(seq_values),
+		.repeats         = 0,
+		.end_delay       = 0
+	};
+
+	nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, NRF_DRV_PWM_FLAG_LOOP);
 
     for (;;)
     {
@@ -639,46 +701,6 @@ int main(void)
 //
 //		receiveDone(); //put radio in RX mode
 //		//Serial.flush(); //make sure all serial data is clocked out before sleeping the MCU
-
-		uint32_t err_code;
-
-		nrf_drv_pwm_config_t const config0 =
-		{
-			.output_pins =
-			{
-				20, 		  						  // channel 0
-				NRF_DRV_PWM_PIN_NOT_USED,             // channel 1
-				NRF_DRV_PWM_PIN_NOT_USED,             // channel 2
-				NRF_DRV_PWM_PIN_NOT_USED,             // channel 3
-			},
-			.irq_priority = APP_IRQ_PRIORITY_LOW,
-			.base_clock   = NRF_PWM_CLK_1MHz,
-			.count_mode   = NRF_PWM_MODE_UP,
-			.top_value    = 250,
-			.load_mode    = NRF_PWM_LOAD_COMMON,
-			.step_mode    = NRF_PWM_STEP_AUTO
-		};
-
-		err_code = nrf_drv_pwm_init(&m_pwm0, &config0, NULL);
-		if (err_code != NRF_SUCCESS)
-		{
-			// Initialization failed. Take recovery action.
-		}
-
-		static nrf_pwm_values_common_t seq_values[] =
-		{
-			125
-		};
-
-		nrf_pwm_sequence_t const seq =
-		{
-			.values.p_common = seq_values,
-			.length          = NRF_PWM_VALUES_LENGTH(seq_values),
-			.repeats         = 0,
-			.end_delay       = 0
-		};
-
-		nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, NRF_DRV_PWM_FLAG_LOOP);
     }
 }
 
